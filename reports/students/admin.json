@@ -1,0 +1,77 @@
+{
+  "loginId": "admin",
+  "uid": "admin_preview",
+  "displayName": "Admin Preview Aspirant",
+  "slotNumber": 1,
+  "targetPost": "SSC CGL Preview",
+  "rank": 3,
+  "totalCohortSize": 3,
+  "totalXp": 0,
+  "testsAttempted": 0,
+  "bestScore": 0,
+  "avgAccuracy": 0,
+  "studyTimeSec": 25,
+  "studyTimeFormatted": "00:25",
+  "activeDays7d": 2,
+  "rewardMultiplier": 0.85,
+  "tierLabel": "Low Activity",
+  "pendingVaultCount": 0,
+  "subjectBreakdown": {
+    "quant": {
+      "subject": "quant",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 0,
+      "accuracy": 0,
+      "timeSec": 0
+    },
+    "reasoning": {
+      "subject": "reasoning",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 0,
+      "accuracy": 0,
+      "timeSec": 0
+    },
+    "english": {
+      "subject": "english",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 0,
+      "accuracy": 0,
+      "timeSec": 0
+    },
+    "ga": {
+      "subject": "ga",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 0,
+      "accuracy": 0,
+      "timeSec": 0
+    }
+  },
+  "recentAttempts": [],
+  "recentSessions": [
+    {
+      "loginAtIso": "2026-11-14T07:50:04.052Z",
+      "exitAtIso": "2026-11-14T07:50:24.406Z",
+      "status": "ended",
+      "activeDurationSec": 20,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-13T08:56:06.246Z",
+      "exitAtIso": "2026-11-13T08:56:11.478Z",
+      "status": "ended",
+      "activeDurationSec": 5,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    }
+  ],
+  "generatedAtIso": "2026-11-14T16:43:45.997Z"
+}

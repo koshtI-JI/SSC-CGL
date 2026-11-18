@@ -1,0 +1,432 @@
+{
+  "loginId": "damini_888",
+  "uid": "damini_01",
+  "displayName": "damini koshti",
+  "slotNumber": 1,
+  "targetPost": "ASO",
+  "rank": 1,
+  "totalCohortSize": 3,
+  "totalXp": 530,
+  "testsAttempted": 7,
+  "bestScore": 23.5,
+  "avgAccuracy": 46.2,
+  "studyTimeSec": 21506,
+  "studyTimeFormatted": "05:58:26",
+  "activeDays7d": 2,
+  "rewardMultiplier": 1.4,
+  "tierLabel": "Top Hustler",
+  "pendingVaultCount": 0,
+  "subjectBreakdown": {
+    "quant": {
+      "subject": "quant",
+      "attemptedQuestions": 2,
+      "correctCount": 2,
+      "wrongCount": 0,
+      "skippedCount": 26,
+      "accuracy": 100,
+      "timeSec": 45
+    },
+    "reasoning": {
+      "subject": "reasoning",
+      "attemptedQuestions": 4,
+      "correctCount": 1,
+      "wrongCount": 3,
+      "skippedCount": 15,
+      "accuracy": 25,
+      "timeSec": 334
+    },
+    "english": {
+      "subject": "english",
+      "attemptedQuestions": 20,
+      "correctCount": 9,
+      "wrongCount": 11,
+      "skippedCount": 52,
+      "accuracy": 45,
+      "timeSec": 110
+    },
+    "ga": {
+      "subject": "ga",
+      "attemptedQuestions": 53,
+      "correctCount": 26,
+      "wrongCount": 27,
+      "skippedCount": 14,
+      "accuracy": 49.1,
+      "timeSec": 737
+    }
+  },
+  "recentAttempts": [
+    {
+      "testTitle": "History Smart Test (15 Qs)",
+      "subjectScope": "ga",
+      "score": 5,
+      "maxScore": 30,
+      "accuracy": 33.3,
+      "correctCount": 5,
+      "wrongCount": 10,
+      "skippedCount": 0,
+      "xpEarned": 28,
+      "timeSec": 70,
+      "complete": true,
+      "submittedAtIso": "2026-11-14T15:32:56.613Z"
+    },
+    {
+      "testTitle": "Ancient History Custom Mock (5 Qs)",
+      "subjectScope": "ga",
+      "score": 5,
+      "maxScore": 10,
+      "accuracy": 60,
+      "correctCount": 3,
+      "wrongCount": 2,
+      "skippedCount": 0,
+      "xpEarned": 20,
+      "timeSec": 53,
+      "complete": true,
+      "submittedAtIso": "2026-11-14T04:09:47.181Z"
+    },
+    {
+      "testTitle": "Daily GA / GS Sectional — 14 Nov",
+      "subjectScope": "ga",
+      "score": 23.5,
+      "maxScore": 30,
+      "accuracy": 92.3,
+      "correctCount": 12,
+      "wrongCount": 1,
+      "skippedCount": 2,
+      "xpEarned": 74,
+      "timeSec": 590,
+      "complete": true,
+      "submittedAtIso": "2026-11-13T19:13:51.459Z"
+    },
+    {
+      "testTitle": "SSC CGL Tier-II Paper-I Section-II (English + GA, +3/-1)",
+      "subjectScope": "full",
+      "score": 20,
+      "maxScore": 120,
+      "accuracy": 37.5,
+      "correctCount": 15,
+      "wrongCount": 25,
+      "skippedCount": 0,
+      "xpEarned": 46,
+      "timeSec": 87,
+      "complete": true,
+      "submittedAtIso": "2026-11-13T18:09:21.034Z"
+    },
+    {
+      "testTitle": "Quant Adaptive Drill (15 Qs)",
+      "subjectScope": "quant",
+      "score": 2,
+      "maxScore": 30,
+      "accuracy": 100,
+      "correctCount": 1,
+      "wrongCount": 0,
+      "skippedCount": 14,
+      "xpEarned": 0,
+      "timeSec": 8,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T17:46:36.157Z"
+    },
+    {
+      "testTitle": "Smart Mixed Practice (15 Qs)",
+      "subjectScope": "full",
+      "score": 0,
+      "maxScore": 30,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 15,
+      "xpEarned": 0,
+      "timeSec": 6,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T17:45:44.986Z"
+    },
+    {
+      "testTitle": "Completed Tests Revision (20 Qs)",
+      "subjectScope": "full",
+      "score": -0.5,
+      "maxScore": 40,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 1,
+      "skippedCount": 19,
+      "xpEarned": 0,
+      "timeSec": 6,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T17:44:27.673Z"
+    },
+    {
+      "testTitle": "English Adaptive Drill (15 Qs)",
+      "subjectScope": "english",
+      "score": 0,
+      "maxScore": 30,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 15,
+      "xpEarned": 0,
+      "timeSec": 14,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T10:48:14.224Z"
+    },
+    {
+      "testTitle": "Smart Mixed Practice (15 Qs)",
+      "subjectScope": "full",
+      "score": 1.5,
+      "maxScore": 30,
+      "accuracy": 50,
+      "correctCount": 1,
+      "wrongCount": 1,
+      "skippedCount": 13,
+      "xpEarned": 0,
+      "timeSec": 69,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T10:45:55.229Z"
+    },
+    {
+      "testTitle": "Revision Vault Re-Test (1 Qs)",
+      "subjectScope": "full",
+      "score": 2,
+      "maxScore": 2,
+      "accuracy": 100,
+      "correctCount": 1,
+      "wrongCount": 0,
+      "skippedCount": 0,
+      "xpEarned": 43,
+      "timeSec": 21,
+      "complete": true,
+      "submittedAtIso": "2026-11-13T09:25:54.164Z"
+    },
+    {
+      "testTitle": "Smart Mixed Practice (15 Qs)",
+      "subjectScope": "full",
+      "score": -0.5,
+      "maxScore": 30,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 1,
+      "skippedCount": 14,
+      "xpEarned": 10,
+      "timeSec": 292,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T09:20:32.016Z"
+    },
+    {
+      "testTitle": "English — Vocab, Idioms & One-Word Booster #01",
+      "subjectScope": "english",
+      "score": 0,
+      "maxScore": 30,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 15,
+      "xpEarned": 10,
+      "timeSec": 10,
+      "complete": false,
+      "submittedAtIso": "2026-11-13T08:38:12.205Z"
+    }
+  ],
+  "recentSessions": [
+    {
+      "loginAtIso": "2026-11-14T16:27:21.176Z",
+      "exitAtIso": "2026-11-14T16:28:24.945Z",
+      "status": "ended",
+      "activeDurationSec": 62,
+      "lastActivityTitle": "Revision Vault",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T16:06:05.884Z",
+      "exitAtIso": "2026-11-14T16:07:52.706Z",
+      "status": "ended",
+      "activeDurationSec": 106,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T15:41:02.745Z",
+      "exitAtIso": "2026-11-14T15:42:50.480Z",
+      "status": "ended",
+      "activeDurationSec": 107,
+      "lastActivityTitle": "Pending Tests & Drafts",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T15:30:09.934Z",
+      "exitAtIso": "2026-11-14T15:36:43.213Z",
+      "status": "ended",
+      "activeDurationSec": 393,
+      "lastActivityTitle": "Revision Vault",
+      "subjectsStudied": [
+        "ga"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T15:04:09.555Z",
+      "exitAtIso": "2026-11-14T15:24:14.569Z",
+      "status": "ended",
+      "activeDurationSec": 1205,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T14:45:32.256Z",
+      "exitAtIso": "2026-11-14T14:54:02.738Z",
+      "status": "ended",
+      "activeDurationSec": 510,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T14:18:19.593Z",
+      "exitAtIso": "2026-11-14T14:29:01.233Z",
+      "status": "ended",
+      "activeDurationSec": 352,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T12:17:09.698Z",
+      "exitAtIso": "2026-11-14T12:58:06.936Z",
+      "status": "ended",
+      "activeDurationSec": 1495,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T11:49:36.821Z",
+      "exitAtIso": "2026-11-14T11:59:43.784Z",
+      "status": "ended",
+      "activeDurationSec": 501,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:53:46.840Z",
+      "exitAtIso": "2026-11-14T11:37:41.897Z",
+      "status": "ended",
+      "activeDurationSec": 1071,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:45:17.529Z",
+      "exitAtIso": "2026-11-14T10:52:34.101Z",
+      "status": "ended",
+      "activeDurationSec": 413,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:40:43.992Z",
+      "exitAtIso": "2026-11-14T10:41:29.002Z",
+      "status": "ended",
+      "activeDurationSec": 45,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:35:16.410Z",
+      "exitAtIso": "2026-11-14T10:39:41.422Z",
+      "status": "ended",
+      "activeDurationSec": 265,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:22:13.519Z",
+      "exitAtIso": "2026-11-14T10:24:03.524Z",
+      "status": "ended",
+      "activeDurationSec": 38,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:08:41.857Z",
+      "exitAtIso": "2026-11-14T10:22:11.859Z",
+      "status": "ended",
+      "activeDurationSec": 8,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:07:31.855Z",
+      "exitAtIso": "2026-11-14T10:07:56.857Z",
+      "status": "ended",
+      "activeDurationSec": 25,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:06:59.238Z",
+      "exitAtIso": "2026-11-14T10:07:06.047Z",
+      "status": "ended",
+      "activeDurationSec": 5,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:06:29.398Z",
+      "exitAtIso": "2026-11-14T10:06:39.399Z",
+      "status": "ended",
+      "activeDurationSec": 10,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T09:29:42.703Z",
+      "exitAtIso": "2026-11-14T09:29:52.705Z",
+      "status": "ended",
+      "activeDurationSec": 10,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T09:27:27.412Z",
+      "exitAtIso": "2026-11-14T09:27:42.414Z",
+      "status": "ended",
+      "activeDurationSec": 15,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T09:26:59.761Z",
+      "exitAtIso": "2026-11-14T09:27:04.415Z",
+      "status": "ended",
+      "activeDurationSec": 4,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T09:20:48.316Z",
+      "exitAtIso": "2026-11-14T10:34:43.672Z",
+      "status": "ended",
+      "activeDurationSec": 1719,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T08:57:52.576Z",
+      "exitAtIso": "2026-11-14T09:06:42.695Z",
+      "status": "ended",
+      "activeDurationSec": 530,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T08:39:33.090Z",
+      "exitAtIso": "2026-11-14T08:39:38.981Z",
+      "status": "ended",
+      "activeDurationSec": 5,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T08:37:48.741Z",
+      "exitAtIso": "2026-11-14T08:57:16.640Z",
+      "status": "ended",
+      "activeDurationSec": 379,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    }
+  ],
+  "generatedAtIso": "2026-11-14T16:43:45.997Z"
+}

@@ -1,0 +1,30 @@
+{
+  "syncedAtIso": "2026-11-14T16:43:46.873Z",
+  "studentCount": 3,
+  "students": [
+    {
+      "loginId": "damini_888",
+      "displayName": "damini koshti",
+      "files": [
+        "reports/students/damini_888.json",
+        "reports/students/damini_888.md"
+      ]
+    },
+    {
+      "loginId": "demo@123",
+      "displayName": "demo",
+      "files": [
+        "reports/students/demo_123.json",
+        "reports/students/demo_123.md"
+      ]
+    },
+    {
+      "loginId": "admin",
+      "displayName": "Admin Preview Aspirant",
+      "files": [
+        "reports/students/admin.json",
+        "reports/students/admin.md"
+      ]
+    }
+  ]
+}

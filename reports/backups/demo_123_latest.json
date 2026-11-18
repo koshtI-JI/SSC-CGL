@@ -1,0 +1,336 @@
+{
+  "loginId": "demo@123",
+  "uid": "demo_123",
+  "displayName": "demo",
+  "slotNumber": 1,
+  "targetPost": "ASO in MEA",
+  "rank": 2,
+  "totalCohortSize": 3,
+  "totalXp": 42,
+  "testsAttempted": 3,
+  "bestScore": 3,
+  "avgAccuracy": 23.3,
+  "studyTimeSec": 3731,
+  "studyTimeFormatted": "01:02:11",
+  "activeDays7d": 1,
+  "rewardMultiplier": 1.15,
+  "tierLabel": "Active Learner",
+  "pendingVaultCount": 0,
+  "subjectBreakdown": {
+    "quant": {
+      "subject": "quant",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 5,
+      "accuracy": 0,
+      "timeSec": 2
+    },
+    "reasoning": {
+      "subject": "reasoning",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 5,
+      "accuracy": 0,
+      "timeSec": 0
+    },
+    "english": {
+      "subject": "english",
+      "attemptedQuestions": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 5,
+      "accuracy": 0,
+      "timeSec": 0
+    },
+    "ga": {
+      "subject": "ga",
+      "attemptedQuestions": 10,
+      "correctCount": 3,
+      "wrongCount": 7,
+      "skippedCount": 5,
+      "accuracy": 30,
+      "timeSec": 156
+    }
+  },
+  "recentAttempts": [
+    {
+      "testTitle": "History Smart Test (1 Qs)",
+      "subjectScope": "ga",
+      "score": -0.5,
+      "maxScore": 2,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 1,
+      "skippedCount": 0,
+      "xpEarned": 12,
+      "timeSec": 10,
+      "complete": true,
+      "submittedAtIso": "2026-11-14T15:54:30.186Z"
+    },
+    {
+      "testTitle": "Physics Custom Mock (5 Qs)",
+      "subjectScope": "ga",
+      "score": 0,
+      "maxScore": 10,
+      "accuracy": 20,
+      "correctCount": 1,
+      "wrongCount": 4,
+      "skippedCount": 0,
+      "xpEarned": 14,
+      "timeSec": 88,
+      "complete": true,
+      "submittedAtIso": "2026-11-14T15:53:11.224Z"
+    },
+    {
+      "testTitle": "History Smart Test (4 Qs)",
+      "subjectScope": "ga",
+      "score": 3,
+      "maxScore": 8,
+      "accuracy": 50,
+      "correctCount": 2,
+      "wrongCount": 2,
+      "skippedCount": 0,
+      "xpEarned": 16,
+      "timeSec": 58,
+      "complete": true,
+      "submittedAtIso": "2026-11-14T15:03:03.513Z"
+    },
+    {
+      "testTitle": "Daily Live Mock — 14 Nov 2026",
+      "subjectScope": "full",
+      "score": 0,
+      "maxScore": 40,
+      "accuracy": 0,
+      "correctCount": 0,
+      "wrongCount": 0,
+      "skippedCount": 20,
+      "xpEarned": 0,
+      "timeSec": 2,
+      "complete": false,
+      "submittedAtIso": "2026-11-14T08:15:16.154Z"
+    }
+  ],
+  "recentSessions": [
+    {
+      "loginAtIso": "2026-11-14T16:02:34.627Z",
+      "exitAtIso": "2026-11-14T16:02:44.628Z",
+      "status": "ended",
+      "activeDurationSec": 10,
+      "lastActivityTitle": "Revision Vault",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T16:00:54.350Z",
+      "exitAtIso": "2026-11-14T16:01:14.351Z",
+      "status": "ended",
+      "activeDurationSec": 20,
+      "lastActivityTitle": "Revision Vault",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T15:56:05.536Z",
+      "exitAtIso": "2026-11-14T16:00:05.538Z",
+      "status": "ended",
+      "activeDurationSec": 240,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T15:49:56.241Z",
+      "exitAtIso": "2026-11-14T15:58:25.468Z",
+      "status": "ended",
+      "activeDurationSec": 509,
+      "lastActivityTitle": "Completed Tests & Revision",
+      "subjectsStudied": [
+        "ga"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T15:01:02.812Z",
+      "exitAtIso": "2026-11-14T15:07:15.951Z",
+      "status": "ended",
+      "activeDurationSec": 373,
+      "lastActivityTitle": "Completed Tests & Revision",
+      "subjectsStudied": [
+        "ga"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T15:00:11.340Z",
+      "exitAtIso": "2026-11-14T15:00:18.440Z",
+      "status": "ended",
+      "activeDurationSec": 7,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T14:11:14.124Z",
+      "exitAtIso": "2026-11-14T14:12:29.825Z",
+      "status": "ended",
+      "activeDurationSec": 74,
+      "lastActivityTitle": "Progress & Activity Chart",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:55:44.771Z",
+      "exitAtIso": "2026-11-14T11:13:56.809Z",
+      "status": "ended",
+      "activeDurationSec": 70,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": [
+        "english"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T10:54:05.684Z",
+      "exitAtIso": "2026-11-14T10:54:33.969Z",
+      "status": "ended",
+      "activeDurationSec": 28,
+      "lastActivityTitle": "Mock Test: Daily English Sectional — 13 Nov",
+      "subjectsStudied": [
+        "english"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T10:53:32.335Z",
+      "exitAtIso": "2026-11-14T10:53:52.342Z",
+      "status": "ended",
+      "activeDurationSec": 20,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:06:30.366Z",
+      "exitAtIso": "2026-11-14T10:07:04.735Z",
+      "status": "ended",
+      "activeDurationSec": 34,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:03:37.335Z",
+      "exitAtIso": "2026-11-14T10:04:02.349Z",
+      "status": "ended",
+      "activeDurationSec": 25,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:03:16.408Z",
+      "exitAtIso": "2026-11-14T10:03:17.419Z",
+      "status": "ended",
+      "activeDurationSec": 1,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T10:01:17.404Z",
+      "exitAtIso": "2026-11-14T10:01:27.111Z",
+      "status": "ended",
+      "activeDurationSec": 9,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T08:13:17.185Z",
+      "exitAtIso": "2026-11-14T08:18:02.196Z",
+      "status": "ended",
+      "activeDurationSec": 285,
+      "lastActivityTitle": "Candidate Profile & Backups",
+      "subjectsStudied": [
+        "quant",
+        "reasoning",
+        "english",
+        "ga"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T08:09:39.417Z",
+      "exitAtIso": "2026-11-14T08:10:22.948Z",
+      "status": "ended",
+      "activeDurationSec": 43,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T08:07:12.039Z",
+      "exitAtIso": "2026-11-14T08:07:43.053Z",
+      "status": "ended",
+      "activeDurationSec": 30,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T07:56:36.903Z",
+      "exitAtIso": "2026-11-14T07:57:35.688Z",
+      "status": "ended",
+      "activeDurationSec": 58,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T07:46:10.799Z",
+      "exitAtIso": "2026-11-14T07:58:34.983Z",
+      "status": "ended",
+      "activeDurationSec": 681,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": [
+        "quant",
+        "reasoning",
+        "english",
+        "ga"
+      ]
+    },
+    {
+      "loginAtIso": "2026-11-14T07:44:32.101Z",
+      "exitAtIso": "2026-11-14T07:45:03.594Z",
+      "status": "ended",
+      "activeDurationSec": 31,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T07:44:00.999Z",
+      "exitAtIso": "2026-11-14T07:44:16.014Z",
+      "status": "ended",
+      "activeDurationSec": 15,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T07:32:00.104Z",
+      "exitAtIso": "2026-11-14T07:32:15.105Z",
+      "status": "ended",
+      "activeDurationSec": 15,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T07:30:55.196Z",
+      "exitAtIso": "2026-11-14T07:31:30.198Z",
+      "status": "ended",
+      "activeDurationSec": 35,
+      "lastActivityTitle": "Student Dashboard",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T06:56:11.173Z",
+      "exitAtIso": "2026-11-14T06:59:51.175Z",
+      "status": "ended",
+      "activeDurationSec": 220,
+      "lastActivityTitle": "Candidate Profile & Backups",
+      "subjectsStudied": []
+    },
+    {
+      "loginAtIso": "2026-11-14T06:50:20.097Z",
+      "exitAtIso": "2026-11-14T06:54:00.046Z",
+      "status": "ended",
+      "activeDurationSec": 219,
+      "lastActivityTitle": "Candidate Profile & Backups",
+      "subjectsStudied": []
+    }
+  ],
+  "generatedAtIso": "2026-11-14T16:43:45.997Z"
+}

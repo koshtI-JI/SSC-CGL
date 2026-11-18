@@ -1,0 +1,651 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Fail-Closed Default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Authentication & Role Helpers (Requires Firebase Auth + Custom Claims or Role Doc) ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isOwner(studentUid) {
+      return isSignedIn() && request.auth.uid == studentUid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+    function isValidScoringConfig(data) {
+      return data.keys().hasAll([
+          'pointsPerCorrect', 'negativeMarks', 'xpAttemptBase',
+          'xpPerCorrect', 'xpAccuracyThreshold', 'xpAccuracyBonus', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'pointsPerCorrect', 'negativeMarks', 'xpAttemptBase',
+          'xpPerCorrect', 'xpAccuracyThreshold', 'xpAccuracyBonus', 'updatedAt'
+        ])
+        && data.pointsPerCorrect is number && data.pointsPerCorrect >= 0 && data.pointsPerCorrect <= 20
+        && data.negativeMarks is number && data.negativeMarks >= 0 && data.negativeMarks <= 10
+        && data.xpAttemptBase is number && data.xpAttemptBase >= 0 && data.xpAttemptBase <= 500
+        && data.xpPerCorrect is number && data.xpPerCorrect >= 0 && data.xpPerCorrect <= 100
+        && data.xpAccuracyThreshold is number && data.xpAccuracyThreshold >= 0 && data.xpAccuracyThreshold <= 100
+        && data.xpAccuracyBonus is number && data.xpAccuracyBonus >= 0 && data.xpAccuracyBonus <= 1000
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPlatformConfig(data) {
+      return data.keys().hasAll(['updatedAt'])
+        && data.keys().size() <= 25
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAdminCredentials(data) {
+      return data.keys().hasAll(['adminId', 'passwordHash', 'updatedAt'])
+        && data.keys().hasOnly(['adminId', 'passwordHash', 'updatedAt'])
+        && data.adminId is string && data.adminId.size() >= 2 && data.adminId.size() <= 120
+        && data.passwordHash is string && data.passwordHash.size() >= 16 && data.passwordHash.size() <= 128
+        && data.updatedAt is timestamp;
+    }
+
+    // Hardened VipInvite: currentPassword plaintext field is strictly prohibited.
+    function isValidVipInvite(data) {
+      return data.keys().hasAll(['loginId', 'displayName', 'targetPost', 'slotNumber', 'active', 'passwordHash', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['loginId', 'displayName', 'targetPost', 'slotNumber', 'active', 'passwordHash', 'createdAt', 'updatedAt'])
+        && data.loginId is string && data.loginId.size() >= 2 && data.loginId.size() <= 120
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.targetPost is string && data.targetPost.size() >= 1 && data.targetPost.size() <= 80
+        && data.slotNumber is int && data.slotNumber >= 1 && data.slotNumber <= 5
+        && data.active is bool
+        && data.passwordHash is string && data.passwordHash.size() >= 16 && data.passwordHash.size() <= 128
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStudentProfile(data) {
+      return data.keys().hasAll(['uid', 'loginId', 'displayName', 'targetPost', 'slotNumber', 'cohortId', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'loginId', 'displayName', 'targetPost', 'slotNumber', 'cohortId', 'targetYear', 'city', 'bio', 'physicalChecklist', 'syllabusMastery', 'avatarDataUrl', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.loginId is string && data.loginId.size() >= 2 && data.loginId.size() <= 120
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.targetPost is string && data.targetPost.size() >= 1 && data.targetPost.size() <= 80
+        && data.slotNumber is int && data.slotNumber >= 1 && data.slotNumber <= 5
+        && data.cohortId is string && data.cohortId == 'ssc_cgl_vip'
+        && (!('targetYear' in data) || (data.targetYear is string && data.targetYear.size() <= 20))
+        && (!('city' in data) || (data.city is string && data.city.size() <= 60))
+        && (!('bio' in data) || (data.bio is string && data.bio.size() <= 240))
+        && (!('physicalChecklist' in data) || (
+          data.physicalChecklist is map
+          && data.physicalChecklist.keys().hasOnly(['height', 'walking', 'cycling'])
+          && (!('height' in data.physicalChecklist) || data.physicalChecklist.height is bool)
+          && (!('walking' in data.physicalChecklist) || data.physicalChecklist.walking is bool)
+          && (!('cycling' in data.physicalChecklist) || data.physicalChecklist.cycling is bool)
+        ))
+        && (!('syllabusMastery' in data) || (data.syllabusMastery is map && data.syllabusMastery.size() <= 60))
+        && (!('avatarDataUrl' in data) || (data.avatarDataUrl is string && data.avatarDataUrl.size() <= 900000))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLeaderboardEntry(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'targetPost', 'cohortId', 'totalXp',
+          'testsAttempted', 'bestScore', 'avgAccuracy', 'totalTimeSec', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'targetPost', 'cohortId', 'totalXp',
+          'testsAttempted', 'bestScore', 'avgAccuracy', 'totalTimeSec', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.targetPost is string && data.targetPost.size() >= 1 && data.targetPost.size() <= 80
+        && data.cohortId is string && data.cohortId == 'ssc_cgl_vip'
+        && data.totalXp is number && data.totalXp >= -10000 && data.totalXp <= 1000000
+        && data.testsAttempted is int && data.testsAttempted >= 0 && data.testsAttempted <= 10000
+        && data.bestScore is number && data.bestScore >= -200 && data.bestScore <= 1000
+        && data.avgAccuracy is number && data.avgAccuracy >= 0 && data.avgAccuracy <= 100
+        && data.totalTimeSec is number && data.totalTimeSec >= 0 && data.totalTimeSec <= 100000000
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidQuestion(data) {
+      return data.keys().hasAll([
+          'subject', 'topic', 'difficulty', 'source',
+          'questionEn', 'optionsEn', 'correctIndex', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'subject', 'topic', 'difficulty', 'yearTag', 'metadata', 'source',
+          'questionEn', 'questionHi', 'optionsEn', 'optionsHi', 'correctIndex',
+          'explanationEn', 'explanationHi', 'shortTrick', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && data.subject in ['quant', 'reasoning', 'english', 'ga']
+        && data.topic is string && data.topic.size() >= 1 && data.topic.size() <= 80
+        && data.difficulty in ['easy', 'medium', 'hard']
+        && (!('yearTag' in data) || (data.yearTag is string && data.yearTag.size() <= 40))
+        && (!('metadata' in data) || (
+          data.metadata is map
+          && data.metadata.keys().hasOnly(['exam', 'year', 'tier', 'shift'])
+        ))
+        && data.source is string && data.source.size() >= 1 && data.source.size() <= 64
+        && data.questionEn is string && data.questionEn.size() >= 1 && data.questionEn.size() <= 2000
+        && (!('questionHi' in data) || (data.questionHi is string && data.questionHi.size() <= 2000))
+        && data.optionsEn is list && data.optionsEn.size() == 4
+        && (!('optionsHi' in data) || (data.optionsHi is list && data.optionsHi.size() == 4))
+        && data.correctIndex is int && data.correctIndex >= 0 && data.correctIndex <= 3
+        && (!('explanationEn' in data) || (data.explanationEn is string && data.explanationEn.size() <= 3000))
+        && (!('explanationHi' in data) || (data.explanationHi is string && data.explanationHi.size() <= 3000))
+        && (!('shortTrick' in data) || (data.shortTrick is string && data.shortTrick.size() <= 1500))
+        && isValidId(data.createdBy)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMockTest(data) {
+      return data.keys().hasAll([
+          'title', 'subjectScope', 'durationMinutes', 'positiveMarks',
+          'negativeMarks', 'questionIds', 'questionCount', 'published',
+          'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'subjectScope', 'durationMinutes', 'positiveMarks',
+          'negativeMarks', 'questionIds', 'questionCount', 'published',
+          'examMode', 'topicTag', 'sectionOrder', 'sectionDurationSec',
+          'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 120
+        && data.subjectScope is string && data.subjectScope.size() >= 2 && data.subjectScope.size() <= 40
+        && data.durationMinutes is int && data.durationMinutes >= 1 && data.durationMinutes <= 240
+        && data.positiveMarks is number && data.positiveMarks >= 0 && data.positiveMarks <= 20
+        && data.negativeMarks is number && data.negativeMarks >= 0 && data.negativeMarks <= 10
+        && data.questionIds is list && data.questionIds.size() >= 1 && data.questionIds.size() <= 100
+        && data.questionCount is int && data.questionCount == data.questionIds.size()
+        && data.published is bool
+        && (!('examMode' in data) || data.examMode in ['standard', 'tier1_sectional'])
+        && (!('topicTag' in data) || (data.topicTag is string && data.topicTag.size() <= 80))
+        && (!('sectionOrder' in data) || (data.sectionOrder is list && data.sectionOrder.size() <= 4))
+        && (!('sectionDurationSec' in data) || (data.sectionDurationSec is int && data.sectionDurationSec >= 60 && data.sectionDurationSec <= 7200))
+        && isValidId(data.createdBy)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTestAttempt(data) {
+      return data.keys().hasAll([
+          'uid', 'studentName', 'testId', 'testTitle', 'subjectScope',
+          'score', 'maxScore', 'accuracy', 'correctCount', 'wrongCount',
+          'skippedCount', 'totalTimeSec', 'xpEarned', 'sectionStats', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'studentName', 'testId', 'testTitle', 'subjectScope', 'topicTag',
+          'score', 'maxScore', 'accuracy', 'correctCount', 'wrongCount',
+          'skippedCount', 'totalTimeSec', 'xpEarned', 'sectionStats', 'createdAt'
+        ])
+        && isValidId(data.uid)
+        && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 80
+        && isValidId(data.testId)
+        && data.testTitle is string && data.testTitle.size() >= 1 && data.testTitle.size() <= 120
+        && data.subjectScope is string && data.subjectScope.size() >= 1 && data.subjectScope.size() <= 40
+        && data.score is number && data.score >= -200 && data.score <= 1000
+        && data.maxScore is number && data.maxScore >= 0 && data.maxScore <= 1000
+        && data.accuracy is number && data.accuracy >= 0 && data.accuracy <= 100
+        && data.correctCount is int && data.correctCount >= 0 && data.correctCount <= 200
+        && data.wrongCount is int && data.wrongCount >= 0 && data.wrongCount <= 200
+        && data.skippedCount is int && data.skippedCount >= 0 && data.skippedCount <= 200
+        && data.totalTimeSec is int && data.totalTimeSec >= 0 && data.totalTimeSec <= 30000
+        && data.xpEarned is number && data.xpEarned >= 0 && data.xpEarned <= 5000
+        && data.sectionStats is map
+        && data.createdAt is timestamp;
+    }
+
+    function isValidAttemptResponse(data) {
+      return data.keys().hasAll(['uid', 'questionId', 'selectedIndex', 'isCorrect', 'timeSpentSec', 'markedForReview', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'questionId', 'selectedIndex', 'isCorrect', 'timeSpentSec', 'markedForReview', 'createdAt'])
+        && isValidId(data.uid)
+        && isValidId(data.questionId)
+        && data.selectedIndex is int && data.selectedIndex >= -1 && data.selectedIndex <= 3
+        && data.isCorrect is bool
+        && data.timeSpentSec is int && data.timeSpentSec >= 0 && data.timeSpentSec <= 3600
+        && data.markedForReview is bool
+        && data.createdAt is timestamp;
+    }
+
+    function isValidRevisionItem(data) {
+      return data.keys().hasAll(['uid', 'questionId', 'testId', 'testTitle', 'subject', 'lastSelectedIndex', 'mastered', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'questionId', 'testId', 'testTitle', 'subject', 'lastSelectedIndex', 'mastered', 'aiDeepNote', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && isValidId(data.questionId)
+        && isValidId(data.testId)
+        && data.testTitle is string && data.testTitle.size() >= 1 && data.testTitle.size() <= 120
+        && data.subject in ['quant', 'reasoning', 'english', 'ga']
+        && data.lastSelectedIndex is int && data.lastSelectedIndex >= -1 && data.lastSelectedIndex <= 3
+        && data.mastered is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCohortTask(data) {
+      return data.keys().hasAll(['title', 'description', 'targetTests', 'targetSubject', 'bonusXp', 'dueDate', 'active', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['title', 'description', 'targetTests', 'targetSubject', 'bonusXp', 'dueDate', 'active', 'createdAt', 'updatedAt'])
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 120
+        && data.description is string && data.description.size() >= 2 && data.description.size() <= 500
+        && data.targetTests is int && data.targetTests >= 1 && data.targetTests <= 50
+        && data.targetSubject in ['all', 'quant', 'reasoning', 'english', 'ga']
+        && data.bonusXp is number && data.bonusXp >= 1 && data.bonusXp <= 2000
+        && data.dueDate is string && data.dueDate.size() >= 4 && data.dueDate.size() <= 32
+        && data.active is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidXpLedgerEntry(data) {
+      return data.keys().hasAll(['uid', 'studentName', 'deltaXp', 'reason', 'sourceType', 'refId', 'createdBy', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'studentName', 'deltaXp', 'reason', 'sourceType', 'refId', 'createdBy', 'createdAt'])
+        && isValidId(data.uid)
+        && data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 80
+        && data.deltaXp is number && data.deltaXp >= -5000 && data.deltaXp <= 5000
+        && data.reason is string && data.reason.size() >= 2 && data.reason.size() <= 200
+        && data.sourceType in ['test', 'task', 'admin', 'quiz_reward']
+        && isValidId(data.refId)
+        && isValidId(data.createdBy)
+        && data.createdAt is timestamp;
+    }
+
+    function isValidPresenceDoc(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'loginId', 'status', 'cameraState',
+          'questionIndex', 'totalQuestions', 'tabSwitchCount', 'lastSeenMs', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'loginId', 'status', 'cameraState',
+          'currentTestId', 'currentTestTitle', 'questionIndex', 'totalQuestions',
+          'tabSwitchCount', 'lastSeenMs', 'snapshotDataUrl', 'snapshotAtMs', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.status in ['online', 'in_exam', 'offline']
+        && data.cameraState in ['off', 'ready', 'streaming', 'denied']
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidProctorRoom(data) {
+      return data.keys().hasAll(['uid', 'sessionId', 'status', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'sessionId', 'status', 'offerSdp', 'answerSdp', 'requestedBy', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.status in ['idle', 'requested', 'offer_ready', 'connected', 'ended']
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidProctorCandidate(data) {
+      return data.keys().hasAll(['sessionId', 'sender', 'candidateJson', 'createdAt'])
+        && data.keys().hasOnly(['sessionId', 'sender', 'candidateJson', 'createdAt'])
+        && data.sender in ['student', 'admin']
+        && data.createdAt is timestamp;
+    }
+
+    function isValidSessionLog(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'loginId', 'status', 'loginAtMs', 'lastActiveAtMs',
+          'logoutAtMs', 'activeDurationSec', 'testsCompleted', 'questionsAttempted',
+          'subjectsStudied', 'lastActivityTitle', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'loginId', 'status', 'loginAtMs', 'lastActiveAtMs',
+          'logoutAtMs', 'activeDurationSec', 'testsCompleted', 'questionsAttempted',
+          'subjectsStudied', 'lastActivityTitle', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.status in ['active', 'ended']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTestDraft(data) {
+      return data.keys().hasAll([
+          'uid', 'testId', 'testTitle', 'subjectScope', 'currentIdx', 'secondsLeft',
+          'lang', 'answeredCount', 'totalQuestions', 'responses', 'updatedAtMs', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'testId', 'testTitle', 'subjectScope', 'currentIdx', 'secondsLeft',
+          'lang', 'answeredCount', 'totalQuestions', 'responses',
+          'sectionSecondsLeft', 'activeSectionIdx',
+          'examSessionId', 'deadlineAtMs', 'sectionDeadlineAtMs',
+          'updatedAtMs', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && isValidId(data.testId)
+        && data.lang in ['en', 'hi']
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidProgressBackup(data) {
+      return data.keys().hasAll([
+          'uid', 'loginId', 'displayName', 'targetPost', 'slotNumber', 'totalXp',
+          'testsCompleted', 'totalSubmissions', 'bestScore', 'avgAccuracy',
+          'totalStudySec', 'attemptsHistory', 'updatedAtMs', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'loginId', 'displayName', 'targetPost', 'slotNumber', 'totalXp',
+          'testsCompleted', 'totalSubmissions', 'bestScore', 'avgAccuracy',
+          'totalStudySec', 'attemptsHistory', 'updatedAtMs', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSupportTicket(data) {
+      return data.keys().hasAll([
+          'uid', 'loginId', 'studentName', 'targetPost', 'subject',
+          'message', 'status', 'resolutionNotified', 'resolutionAcked',
+          'createdAtMs', 'resolvedAtMs', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'loginId', 'studentName', 'targetPost', 'subject',
+          'message', 'status', 'adminReply', 'resolutionNotified', 'resolutionAcked',
+          'createdAtMs', 'resolvedAtMs', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.status in ['open', 'resolved']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidReportedQuery(data) {
+      return data.keys().hasAll([
+          'uid', 'loginId', 'studentName', 'questionId', 'sourceContext', 'reason',
+          'questionSnapshot', 'status', 'createdAtMs', 'resolvedAtMs', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'loginId', 'studentName', 'questionId', 'sourceContext', 'reason',
+          'aiExplanationSnapshot', 'questionSnapshot', 'status', 'adminNotes',
+          'createdAtMs', 'resolvedAtMs', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && isValidId(data.questionId)
+        && data.status in ['open', 'resolved']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCorrectedQuestionOverride(data) {
+      return data.keys().hasAll([
+          'questionId', 'subject', 'topic', 'difficulty', 'questionEn',
+          'optionsEn', 'correctIndex', 'updatedBy', 'updatedAtMs', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'questionId', 'subject', 'topic', 'difficulty', 'questionEn', 'questionHi',
+          'optionsEn', 'optionsHi', 'correctIndex', 'explanationEn', 'explanationHi',
+          'shortTrick', 'updatedBy', 'updatedAtMs', 'updatedAt'
+        ])
+        && isValidId(data.questionId)
+        && isValidId(data.updatedBy)
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules (RBAC Enforced via Firebase Auth) ---
+
+    match /users/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow get: if (isSignedIn() && settingId in ['scoring', 'platformConfig']) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && isValidId(settingId) && (
+        (settingId == 'scoring' && isValidScoringConfig(incoming()) && incoming().updatedAt == request.time)
+        || (settingId == 'platformConfig' && isValidPlatformConfig(incoming()) && incoming().updatedAt == request.time)
+        || (settingId == 'adminCredentials' && isValidAdminCredentials(incoming()) && incoming().updatedAt == request.time)
+      );
+      allow delete: if false;
+    }
+
+    // Admin-only invite roster; zero plaintext password exposure permitted.
+    match /vipInvites/{inviteKey} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && isValidId(inviteKey)
+        && isValidVipInvite(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(inviteKey)
+        && isValidVipInvite(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(inviteKey);
+    }
+
+    match /students/{studentUid} {
+      allow get: if isOwner(studentUid) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if (isOwner(studentUid) || isAdmin())
+        && isValidId(studentUid)
+        && isValidStudentProfile(incoming())
+        && incoming().uid == studentUid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if (isOwner(studentUid) || isAdmin())
+        && isValidId(studentUid)
+        && isValidStudentProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().cohortId == existing().cohortId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if false;
+
+      match /revisionVault/{questionId} {
+        allow get, list: if isOwner(studentUid) || isAdmin();
+        allow create: if isOwner(studentUid) && isValidId(questionId)
+          && isValidRevisionItem(incoming())
+          && incoming().uid == studentUid
+          && incoming().questionId == questionId
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isOwner(studentUid) && isValidId(questionId)
+          && isValidRevisionItem(incoming())
+          && incoming().uid == existing().uid
+          && incoming().questionId == existing().questionId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time;
+        allow delete: if isOwner(studentUid) || isAdmin();
+      }
+
+      match /testDrafts/{testId} {
+        allow get, list: if isOwner(studentUid) || isAdmin();
+        allow create: if isOwner(studentUid) && isValidId(testId)
+          && isValidTestDraft(incoming())
+          && incoming().uid == studentUid
+          && incoming().testId == testId
+          && incoming().updatedAt == request.time;
+        allow update: if isOwner(studentUid) && isValidId(testId)
+          && isValidTestDraft(incoming())
+          && incoming().uid == existing().uid
+          && incoming().testId == existing().testId
+          && incoming().updatedAt == request.time;
+        allow delete: if isOwner(studentUid) || isAdmin();
+      }
+    }
+
+    match /progressBackups/{backupId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (isSignedIn() && isValidProgressBackup(incoming()) && incoming().uid == request.auth.uid && incoming().updatedAt == request.time);
+      allow update: if isAdmin() || (isSignedIn() && isValidProgressBackup(incoming()) && incoming().uid == existing().uid && incoming().uid == request.auth.uid && incoming().updatedAt == request.time);
+      allow delete: if false;
+    }
+
+    match /leaderboard/{studentUid} {
+      allow get, list: if isSignedIn();
+      allow create, update: if (isOwner(studentUid) || isAdmin())
+        && isValidLeaderboardEntry(incoming())
+        && incoming().uid == studentUid
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /questions/{questionId} {
+      allow get, list: if isSignedIn();
+      allow create: if isAdmin() && isValidId(questionId)
+        && isValidQuestion(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(questionId)
+        && isValidQuestion(incoming())
+        && incoming().createdBy == existing().createdBy
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /tests/{testId} {
+      allow get, list: if isSignedIn() && (isAdmin() || resource.data.published == true);
+      allow create: if isAdmin() && isValidId(testId)
+        && isValidMockTest(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(testId)
+        && isValidMockTest(incoming())
+        && incoming().createdBy == existing().createdBy
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /attempts/{attemptId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(attemptId)
+        && isValidTestAttempt(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().createdAt == request.time;
+      allow update, delete: if false;
+
+      match /responses/{questionId} {
+        allow get, list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+        allow create: if isSignedIn() && isValidAttemptResponse(incoming())
+          && incoming().uid == request.auth.uid
+          && incoming().questionId == questionId
+          && incoming().createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    match /tasks/{taskId} {
+      allow get, list: if isSignedIn();
+      allow create: if isAdmin() && isValidCohortTask(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidCohortTask(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /xpLedger/{entryId} {
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if (isAdmin() || (isSignedIn() && incoming().uid == request.auth.uid && incoming().sourceType in ['test', 'quiz_reward']))
+        && isValidXpLedgerEntry(incoming())
+        && incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /presence/{studentUid} {
+      allow get, list: if isOwner(studentUid) || isAdmin();
+      allow create, update: if (isOwner(studentUid) || isAdmin())
+        && isValidPresenceDoc(incoming())
+        && incoming().uid == studentUid
+        && incoming().updatedAt == request.time;
+      allow delete: if isOwner(studentUid) || isAdmin();
+    }
+
+    match /proctorRooms/{studentUid} {
+      allow get: if isOwner(studentUid) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if (isOwner(studentUid) || isAdmin())
+        && isValidProctorRoom(incoming())
+        && incoming().uid == studentUid
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+
+      match /candidates/{candId} {
+        allow get, list: if isOwner(studentUid) || isAdmin();
+        allow create: if (isOwner(studentUid) || isAdmin())
+          && isValidProctorCandidate(incoming())
+          && incoming().createdAt == request.time;
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    match /sessionLogs/{sessionId} {
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn() && isValidSessionLog(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if (isAdmin() || (isSignedIn() && existing().uid == request.auth.uid))
+        && isValidSessionLog(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /supportTickets/{ticketId} {
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn() && isValidSupportTicket(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().status == 'open'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if (isAdmin() || (isSignedIn() && existing().uid == request.auth.uid))
+        && isValidSupportTicket(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /reportedQueries/{reportId} {
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn() && isValidReportedQuery(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().status == 'open'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidReportedQuery(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /corrected_questions_bank/{questionId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isAdmin()
+        && isValidCorrectedQuestionOverride(incoming())
+        && incoming().questionId == questionId
+        && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+  }
+}

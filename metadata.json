@@ -1,0 +1,5 @@
+{
+  "name": "Path to CGL",
+  "description": "Private invite-only SSC CGL mock exam platform with TCS iON interface, zero-loss test resume, matte light/dark UI, and cohort analytics.",
+  "requestFramePermissions": ["camera"]
+}

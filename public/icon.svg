@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <!-- Background Blue Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    
+    <!-- Accent Orange Gradient -->
+    <linearGradient id="dotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+
+    <!-- Subtle Drop Shadow for depth -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0F172A" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Dark Outer Border -->
+  <rect x="0" y="0" width="100" height="100" rx="24" fill="#0F172A" />
+
+  <!-- Blue Inner Background -->
+  <rect x="8" y="8" width="84" height="84" rx="16" fill="url(#bgGrad)" />
+
+  <!-- Mathematically Precise Letter M -->
+  <path d="M 24 74 
+           V 26 
+           H 36 
+           L 50 48 
+           L 64 26 
+           H 76 
+           V 74 
+           H 64 
+           V 48 
+           L 50 70 
+           L 36 48 
+           V 74 
+           Z" 
+        fill="#FFFFFF" 
+        filter="url(#shadow)" />
+
+  <!-- Cute Orange Dot Accent overlapping top-right -->
+  <circle cx="78" cy="24" r="6.5" fill="url(#dotGrad)" filter="url(#shadow)" />
+</svg>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting — Path to CGL</title>
+    <script>
+      (function () {
+        var loc = window.location;
+        var parts = loc.pathname.split('/').filter(Boolean);
+        // Support both root hosting and project-subpath hosting (e.g. /SSC-CGL/om)
+        var routeSuffix = '';
+        var baseSegments = [];
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i] === 'om' || parts[i] === 'dest-simulator') {
+            routeSuffix = '/' + parts.slice(i).join('/');
+            baseSegments = parts.slice(0, i);
+            break;
+          }
+        }
+        var basePath = baseSegments.length > 0 ? '/' + baseSegments.join('/') + '/' : '/';
+        if (!routeSuffix && parts.length > 0) {
+          // Assume project subpath (e.g. /SSC-CGL/unknown) -> preserve first segment as repo base
+          basePath = '/' + parts[0] + '/';
+          routeSuffix = '/';
+        }
+        var hashTarget = routeSuffix && routeSuffix !== '/' ? '#' + routeSuffix : '#/';
+        loc.replace(loc.origin + basePath + hashTarget);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

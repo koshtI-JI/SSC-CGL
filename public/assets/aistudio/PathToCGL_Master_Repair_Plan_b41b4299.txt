@@ -1,0 +1,1687 @@
+# PATH TO CGL — MASTER CODEBASE REPAIR, SECURITY, DATA INTEGRITY & RELEASE PLAN
+
+**Document type:** Engineering master instruction for Google AI Studio  
+**Project:** Path to CGL (Get to CGL) — private SSC CGL preparation platform  
+**Source reviewed:** Uploaded `path-to-cgl.zip` archive  
+**Production website:** `https://koshti-ji.github.io/SSC-CGL/`  
+**GitHub repository:** `https://github.com/koshtI-JI/SSC-CGL`  
+**Hosting:** GitHub Pages (existing deployment)  
+**Architecture constraint:** Frontend application; no custom backend server  
+**Primary objective:** Repair and verify the existing application without rebuilding it or risking production/student data.
+
+---
+
+# HOW TO USE THIS DOCUMENT
+
+Upload this complete Markdown file into the existing Google AI Studio project, together with the original project source ZIP or extracted source tree. Tell AI Studio to treat this document as the master engineering specification.
+
+**Do not ask the AI to execute every phase in one uncontrolled operation.** It must first protect the project, inspect the current workspace, compare it with the source findings in this document, and then work in the numbered phases. Each phase must end with tests, a change log, a rollback point, and a report. The AI must stop at every approval gate described below.
+
+This document contains:
+
+1. Findings verified from the uploaded source archive.
+2. Confirmed bugs and risks with source-file locations.
+3. The intended architecture and data ownership model.
+4. Exact repair requirements and implementation guidance.
+5. Account-specific identity and history-preservation rules.
+6. Security requirements and a safe authentication migration gate.
+7. Detailed test scenarios and acceptance criteria.
+8. Preview deployment, measurement, and rollback requirements.
+
+**Evidence boundary:** The findings below describe the uploaded ZIP as inspected. The ZIP does not contain `.git` history or a production database export. Do not pretend that these findings prove the current live GitHub repository or live Firestore contents. Re-check the current working tree and staging/production state before making changes. If the current files differ, report the differences and use the actual current source as the implementation authority while preserving the invariants in this document.
+
+---
+
+# 0. NON-NEGOTIABLE ENGINEERING RULES
+
+You are the lead full-stack engineer, architect, security engineer, data-integrity engineer, QA engineer and release engineer for this repair project.
+
+## 0.1 Preserve the existing application
+
+- Do not rebuild the application from scratch.
+- Do not replace it with a template, demo, mock dashboard or newly generated app.
+- Do not remove an existing module because you do not understand it.
+- Preserve all existing React components, hooks, utilities, services, styles, layouts, icons, images, question banks, JSON datasets, test data, reports and configurations unless a specific change is justified and approved.
+- Preserve all existing student-facing functionality and the TCS iON-style examination experience.
+- Preserve the current Git-based data/report workflow where it is safe; do not casually migrate all datasets to another database.
+- Preserve Firestore, LocalStorage and IndexedDB responsibilities unless a migration is necessary, documented, tested and approved.
+- Do not introduce Express, a custom Node server, a custom API server or an unnecessary backend.
+- Do not add dependencies unless the need is demonstrated and the dependency is justified.
+
+## 0.2 Protect the original and production
+
+Before changing any code:
+
+1. Identify the original source archive and keep it immutable.
+2. Create a separate development copy or branch, for example `repair/path-to-cgl`.
+3. Record the source revision or archive checksum where possible.
+4. Record the clean working-tree state.
+5. Never work directly in the production checkout or deployment branch.
+6. Never write to the production Firebase project during development or testing.
+7. Never commit or deploy automatically to the original GitHub repository.
+8. Never modify production data, production security rules, production Firebase Auth users, or production GitHub reports without explicit owner approval.
+9. Take a backup before every approved data migration, and verify that it can be read before migrating.
+10. Maintain a rollback checkpoint after every phase.
+
+If Git metadata is absent, do not invent a commit history. Initialize a new development repository only in the working copy and retain the untouched ZIP separately.
+
+## 0.3 Work in small, reviewable changes
+
+For every repair:
+
+- Explain the root cause before editing.
+- List the files to be changed and why.
+- Inspect imports, types, callers, tests and stored data formats before changing a file.
+- Prefer a small targeted patch over a broad rewrite.
+- Add or update regression tests.
+- Run tests, type checking and build checks after the change.
+- Compare the diff to ensure unrelated code and datasets did not change.
+- Record any migration or compatibility implications.
+- Stop if a change can delete, overwrite, merge or irreversibly transform student data.
+
+Never report “fixed”, “secure”, “tested”, “deployed” or “working” merely because code was generated. Each claim must have an actual verification result.
+
+## 0.4 No invented credentials or data
+
+- Never invent Firebase records, test attempts, account details, email addresses, API keys, performance measurements or deployment URLs.
+- Never print or expose existing passwords, password hashes, GitHub PATs, API keys or other secrets in reports.
+- Firebase web-app configuration is client configuration, not a service-account private key. Do not falsely describe the web API key as a server secret; protect data through authentication and Firestore rules.
+- Any `VITE_` value compiled into a Vite client bundle is visible to users. Never treat it as secret.
+- Never ask the owner to paste production passwords, PATs or privileged credentials into source code or chat.
+
+---
+
+# 1. PROJECT PURPOSE AND FUNCTIONAL SCOPE
+
+Path to CGL is a private SSC CGL preparation platform intended for a very small cohort (maximum five personal student accounts). It is not a public commercial platform. It provides a complete learning and mock-examination environment.
+
+The repair objective is reliability, security, data integrity, continuity and usability — not random new features.
+
+## 1.1 Student experience to preserve
+
+- Student login and session restoration.
+- Student profile and profile editing.
+- Main student dashboard.
+- Published/pending mock tests and completed test history.
+- Tier-I and Tier-II mock examinations.
+- TCS iON-style exam interface and question palette.
+- English and Hindi question content as currently implemented.
+- Answer selection, question navigation, mark-for-review and unanswered states.
+- Exam timer and section timer behaviour.
+- Auto-save, resume and final submission.
+- Negative marking and result calculations.
+- Post-exam analysis, accuracy and subject-wise performance.
+- XP, leaderboard and progress analytics.
+- Revision Vault and saved mistakes.
+- Syllabus mastery, target post and study goals.
+- Formula Booster and AI study mentor where configured.
+- Notifications, support chat and support/report flows.
+- DEST typing simulator and Computer Knowledge simulator.
+- Offline indicators, PWA installation, cached mock packs and offline exam drafts.
+- Data backup and restore features.
+
+## 1.2 Admin experience to preserve
+
+- Admin login and admin session.
+- Admin dashboard / Control Center at the existing admin route.
+- Student roster and VIP account management.
+- Student profile editing and account activation/deactivation.
+- Question bank management and corrected-question overrides.
+- PDF question import and question extraction.
+- Manual and bulk question import.
+- Mock test creation, editing and publishing.
+- Daily/automated mock configuration where already implemented.
+- Student progress, cohort analytics and reports.
+- Live presence and WebRTC proctoring.
+- Support tickets and reported questions.
+- XP ledger, tasks and reward-related administration.
+- Platform settings and AI key configuration.
+- GitHub repository editing/report download tools where enabled.
+
+## 1.3 Existing routes
+
+The inspected source resolves these application routes:
+
+- `/` — Student Portal.
+- `/om` — Admin Control Center.
+- `/dest-simulator` — DEST / Computer Knowledge simulator route.
+
+Routing is handled through hash-aware helpers in `src/utils/appRoutes.ts`. Preserve these routes and verify the GitHub Pages subpath deployment.
+
+---
+
+# 2. VERIFIED SOURCE ARCHITECTURE
+
+The uploaded ZIP declares the following stack in `package.json`:
+
+| Technology | Declared dependency/range |
+|---|---|
+| React | `^19.0.1` |
+| React DOM | `^19.0.1` |
+| TypeScript | `^7.0.2` |
+| Vite | `^8.3.0` |
+| Tailwind CSS | `^4.3.3` |
+| Firebase JS SDK | `^13.3.0` |
+| PDF.js | `^6.5.438` |
+| PWA plugin | `^2.0.0` |
+| Motion | `^12.23.24` |
+| Lucide React | `^0.546.0` |
+| Prism.js | `^1.30.0` |
+| `tsx` | `^4.21.0` |
+
+The package declares Node `>=22`.
+
+**Important:** These are package manifest version ranges, not proof of the exact installed versions. The ZIP did not include a lockfile. On the development machine, verify actual resolved versions with `node --version`, `npm --version` and `npm ls --depth=0`. Create and commit a lockfile only after a clean, reproducible dependency install has been verified.
+
+## 2.1 Major project files
+
+- `src/App.tsx` — application entry/orchestration, session restoration, route selection, student/admin state, providers and global UI.
+- `src/main.tsx` — React bootstrap.
+- `src/index.css` — global styling.
+- `src/context/` — live data and platform configuration contexts.
+- `src/hooks/` — online status, PWA install, theme, live sync, activity and proctoring hooks.
+- `src/lib/firebase.ts` — Firebase app and Firestore initialization/configuration.
+- `src/lib/firestoreService.ts` — main Firestore/data service; central, large service module. Do not rewrite wholesale.
+- `src/components/` — student portal, admin control, exam engine and other UI modules.
+- `src/utils/` — exam calculations, local fallback, sync, IndexedDB, PDF ingestion, parsing, analytics, sessions, routing and other domain logic.
+- `src/types/` — shared data types.
+- `src/data/` — bundled static SSC question banks.
+- `public/` — icons, PWA assets and GitHub Pages 404 fallback.
+- `reports/` — student and cohort snapshots/backups; potentially contains private student data.
+- `firestore.rules` — current Firestore security rules.
+- `security_spec.md` — desired Firestore security properties/adversarial checks; it is a specification, not proof that current rules satisfy it.
+- `firebase-applet-config.json` — Firebase web-app configuration.
+- `firebase-blueprint.json` — Firebase blueprint/configuration data.
+- `SYSTEM_BLUEPRINT.md`, `README.md` — project documentation; some claims must be reconciled against actual code.
+- `vite.config.ts` — build base path and PWA setup.
+- `package.json` — scripts and declared dependencies.
+
+## 2.2 Existing components
+
+The source archive includes (among others):
+
+`AdminCohortProgressSection.tsx`, `AdminControlCenter.tsx`, `AdminLiveProctorPanel.tsx`, `AdminPdfIngestor.tsx`, `AdminUserManagementTab.tsx`, `AiKeySettingsModal.tsx`, `AppErrorBoundary.tsx`, `AspirantCoachCard.tsx`, `AuthGateway.tsx`, `CameraRulesModal.tsx`, `CompletedTestsPanel.tsx`, `CustomMockBuilderModal.tsx`, `DestComputerSimulator.tsx`, `DynamicSettingsManagerPanel.tsx`, `EditProfileModal.tsx`, `ExamCalculator.tsx`, `ExamRoughPadModal.tsx`, `FloatingSupportChatWidget.tsx`, `GitReportsSyncCard.tsx`, `GlobalSearchModal.tsx`, `LeaderboardPanel.tsx`, `LiveCodeEditorPanel.tsx`, `NotificationBell.tsx`, `OfflineIndicator.tsx`, `PWAInstallButton.tsx`, `PdfQuestionExtractor.tsx`, `PendingTestsPanel.tsx`, `PopupRewardQuizModal.tsx`, `PrintableReportModal.tsx`, `ProgressChartPanel.tsx`, `QuestionTimeGraph.tsx`, `RankBadge.tsx`, `ReportQuestionModal.tsx`, `RevisionVault.tsx`, `RulesGuideModal.tsx`, `ScratchRewardModal.tsx`, `StudentDashboard.tsx`, `StudentProfilePanel.tsx`, `StudyFormulaBoosterModal.tsx`, `SyllabusTopicDropdown.tsx`, `TcsIonTestEngine.tsx`, `ThemeToggleButton.tsx`, `TopNav.tsx` and `WipeQuestionsModal.tsx`.
+
+Do not use this list as permission to delete anything. Check the current source for additional modules and dependencies.
+
+## 2.3 Important hooks
+
+The archive includes `useLiveDataSync.ts`, `useOnlineStatus.ts`, `usePWAInstall.ts`, `useStudentActivityTracker.ts`, `useStudentProctorPublisher.ts` and `useTheme.ts`.
+
+## 2.4 Important domain utilities
+
+The archive includes:
+
+- `adminCommandCenter.ts`
+- `appRoutes.ts`
+- `bulkParser.ts`
+- `cloudFirstSync.ts`
+- `destSimulator.ts`
+- `dreamPostCatalog.ts`
+- `examEngine.ts`
+- `firestoreQuota.ts`
+- `githubCodeEditor.ts`
+- `indexedDbStore.ts`
+- `localFallbackStore.ts`
+- `pdfIngestor.ts`
+- `pdfQuestionExtractor.ts`
+- `platformConfig.ts`
+- `revisionHistory.ts`
+- `sessionAndOverrides.ts`
+- `staticGkBank.ts`
+- `studentAnalyticsEngine.ts`
+- `studyCoach.ts`
+- `syllabusCatalog.ts`
+- `tier1Engine.ts`
+- `tier2Engine.ts`
+
+There are tests for these utilities, but the package test command does not currently include every test file (see Section 12).
+
+## 2.5 Static question banks — preserve all
+
+The archive contains:
+
+- `src/data/gkBank.json`
+- `src/data/sscEnglishBank.ts`
+- `src/data/sscGaBank.ts`
+- `src/data/sscQuantBank.ts`
+- `src/data/sscReasoningBank.ts`
+- `src/data/sscStarterBank.ts`
+
+Do not regenerate, truncate, deduplicate or replace these datasets without a full question-ID and content comparison plus owner approval. Do not change correct answers or bilingual text as part of unrelated refactors.
+
+---
+
+# 3. ACCOUNT IDENTITY — CRITICAL REPAIR
+
+This is a high-priority data-integrity defect. Treat account identity and login username as separate concepts.
+
+## 3.1 Canonical identities that must be preserved
+
+| Person/account | Immutable application UID | Current login ID | Previous login ID |
+|---|---|---|---|
+| Damini | `damini_01` | `damini_888` | `damini_01` |
+| Demo | `demo_123` | `demo@123` | — |
+
+Rules:
+
+- Damini's permanent application UID is `damini_01`.
+- `damini_888` is the current mutable login ID, not a new student UID.
+- The old username `damini_01` must not become a second Damini account.
+- Demo's permanent application UID is `demo_123`.
+- Demo's login ID is `demo@123`.
+- Never derive an existing account's permanent identity from the current username.
+- Never rewrite historical attempts, XP ledger entries, revisions or backups simply because a login ID changes.
+- For new accounts, use a generated immutable application UID; do not use a mutable login name as the permanent ID.
+
+## 3.2 Confirmed root cause: real accounts are filtered as dummy accounts
+
+In the uploaded archive, `src/utils/sessionAndOverrides.ts` contains `BLOCKED_DUMMY_UIDS` with all of these values:
+
+- `admin_preview`
+- `damini_01`
+- `damini_888`
+- `demo_123`
+- `dummy_student`
+- `test_dummy`
+
+`isRealCohortStudentUid()` rejects every value in that set. This is incompatible with the real Damini and Demo accounts.
+
+The separate `SYSTEM_PLACEHOLDER_UIDS` set contains the intended placeholder IDs (`admin_preview`, `dummy_student`, `test_dummy`). The source comments say legitimate invited accounts should remain eligible, but the admin-specific function has an additional incorrect deny list.
+
+This filter is used in the admin cohort/analytics/proctoring and roster flows. `buildAdminUserManagementRows()` in `src/utils/adminCommandCenter.ts` calls it for invite, student, presence and leaderboard records. Consequently, Damini and Demo can be eligible for their own dashboards and still disappear from Admin User Management and admin cohort views.
+
+The current tests in `src/utils/sessionAndOverrides.test.ts` explicitly expect `damini_01`, `damini_888` and `demo_123` to be false. Update these tests to reflect the correct business rule. Do not leave a regression test that reintroduces the defect.
+
+### Required fix
+
+- Define one clear policy: exclude only actual internal/system placeholders from student cohort views.
+- Do not hard-code real student UIDs or mutable login IDs in a “dummy” deny list.
+- Make eligibility depend on authoritative active cohort membership/invite identity and explicit system placeholders.
+- Ensure `allowedCohortUids` semantics do not accidentally allow all entries when an empty set is supplied unless that is an intentional, tested contract. Document that behavior.
+- Update all callers consistently: admin user roster, cohort progress, leaderboard, presence, live proctor and analytics.
+- Add tests for both real accounts and each actual placeholder.
+
+Acceptance tests:
+
+1. Damini `damini_01` appears once in Admin User Management.
+2. Her displayed login is `damini_888` when the latest authoritative account record says so.
+3. Her stable UID stays `damini_01` after a login rename.
+4. Demo `demo_123` appears once, with login `demo@123`.
+5. `admin_preview`, `dummy_student` and `test_dummy` do not appear as real students.
+6. A login rename does not create a second roster row or split attempts/XP.
+
+## 3.3 Confirmed root cause: stale profile can override newer invite identity
+
+In `buildAdminUserManagementRows()` the inspected code uses:
+
+- `loginId: stu?.loginId || inv.loginId`
+- `displayName: stu?.displayName || inv.displayName`
+- `targetPost: stu?.targetPost || inv.targetPost ...`
+
+This always prefers a student profile when it exists, even when the VIP invite was edited more recently. Admin can therefore see a stale username/name/target post.
+
+### Required fix
+
+- Establish which document is authoritative for login and account status. In the current architecture, the VIP invite is the login/credential/account-control record; the student profile is the educational profile and historical progress record.
+- For overlapping profile fields, use an explicit merge policy with timestamps and field ownership. Do not blindly choose “latest entire object” if it can overwrite student-only fields.
+- The login ID, active state and credential metadata must come from the authoritative account record.
+- Display name/target post edits must update invite and student profile consistently, but failures must be surfaced and queued (see Section 7).
+- Use `createdAt` and `updatedAt` consistently, normalizing Firestore Timestamps and numeric local timestamps without comparing incompatible representations naively.
+- Add an account row field for account creation time so Admin can display it.
+
+Acceptance: edit profile/admin fields, refresh, log out/in, and confirm the same current values appear in the student profile, admin roster and leaderboard without losing student-specific fields.
+
+## 3.4 Confirmed password exposure in Admin UI and data model
+
+In the uploaded source:
+
+- `AdminUserManagementRow` has a `password` field.
+- `buildAdminUserManagementRows()` assigns `password: inv.currentPassword ?? null`.
+- `AdminUserManagementTab.tsx` includes password reveal/copy functionality and password inputs using text rendering in parts of the form.
+- `VipInvite` type includes optional `currentPassword`.
+- `firestore.rules` explicitly permits the optional `currentPassword` field in a VIP invite document.
+- Create/update VIP account functions write plaintext `currentPassword` alongside a hash.
+- Local fallback and snapshot export paths also copy this field.
+
+This is a confirmed security defect, not just a UI issue.
+
+### Required fix
+
+- Remove password values from roster row types, list queries, view models, analytics, debug output and UI.
+- Never display or copy an existing password in the Admin Panel.
+- All password/new-password inputs must use `type="password"`, with optional show/hide only for the newly typed value and never for an existing stored value.
+- Remove plaintext password writes from new account creation and account edits.
+- Stop accepting the `currentPassword` property in new data validation and new persistence paths.
+- Add a migration plan to remove legacy plaintext values from Firestore, LocalStorage, IndexedDB and report/snapshot files after backup and approval.
+- Do not delete live legacy fields before a verified backup and approved staging migration.
+- Do not print old values in migration logs.
+- Sanitize `exportLocalCohortSnapshot()` and all backup/export paths so credentials and authentication metadata are excluded.
+
+Do not confuse “remove plaintext from the UI” with “secure authentication”. The current authentication architecture itself must be addressed in Section 5.
+
+## 3.5 Account lifecycle and duplicate protection
+
+Implement a safe account lifecycle:
+
+- Create: generated immutable UID; normalized, unique login ID; duplicate/collision checks; account creation timestamp.
+- Rename login: update login ID only; keep UID and history unchanged.
+- Edit profile: update owned fields consistently.
+- Activate/deactivate: preserve all records; prevent a deactivated user from starting new sessions/tests; do not delete progress.
+- Password recovery: only through an authentication mechanism that can securely prove or reset identity.
+- Archive/revoke: soft-state transition; retain tests, responses, XP and reports.
+- Delete: do not expose destructive hard delete for a student account without a separate, explicit retention/export policy and owner approval.
+
+Check login-ID normalization collisions. `loginIdToKey()` in `src/utils/examEngine.ts` lowercases/trims and replaces non-alphanumeric characters with underscores. Therefore `demo@123` maps to `demo_123`. Test collisions such as different punctuation producing the same normalized key before creating/updating an account.
+
+The account creation code currently stores invites by normalized login key. Existing account documents must retain their current document IDs during a rename. Do not “fix” Damini by moving her account document from `damini_01` to `damini_888`.
+
+The inspected code enforces a maximum of five in account creation, but does not clearly enforce unique slot numbers. Report the current slot-number anomalies and determine the intended slot policy. Do not silently reassign any live slot.
+
+## 3.6 Password reset limitation
+
+The current project has no Firebase Authentication SDK integration and no secure browser-only way to reset another user's Firebase Authentication password. Do not fake a reset button that only changes local state or updates an insecure hash.
+
+A static frontend can:
+
+- Let a signed-in user change their own password through Firebase Authentication with recent reauthentication.
+- Send a reset email to a real, verified/reachable email address using Firebase Authentication, if the account has one.
+- Offer a manual owner-operated reset through Firebase Console when the account uses a username without a reachable email, if that is the chosen no-backend process.
+
+A frontend client must not be able to set arbitrary passwords for other accounts using privileged credentials. If programmatic admin-set password is required, it needs a trusted administrative capability (for example a managed server-side function) which conflicts with the strict “no custom backend” constraint. Do not add one without explicit approval.
+
+Before implementation, present the practical options and limitations for `damini_888` and `demo@123`; do not invent email addresses. Keep the existing application usable until a safe migration is approved and tested in staging.
+
+---
+
+# 4. ACCOUNT DATA FOUND IN THE UPLOADED ARCHIVE
+
+The ZIP includes report snapshots under `reports/students/` and `reports/backups/`. These files are historical snapshots, not proof of the current live database state.
+
+The inspected `reports/students/` records show:
+
+| File | UID inside file | Login in snapshot | Snapshot values |
+|---|---|---|---|
+| `damini_01.json` | `damini_01` | `damini_01` | XP 502, 6 attempted tests, best score 23.5, accuracy 48.3%, snapshot time 2026-11-14 07:29:49Z |
+| `damini_888.json` | `damini_01` | `damini_888` | XP 530, 7 attempted tests, best score 23.5, accuracy 46.2%, snapshot time 2026-11-14 16:43:45Z |
+| `demo_123.json` | `demo_123` | `demo@123` | XP 42, 3 attempted tests, best score 3, accuracy 23.3%, snapshot time 2026-11-14 16:43:45Z |
+| `admin.json` | `admin_preview` | `admin` | Admin preview placeholder, not a real student |
+
+The later Damini snapshot `damini_888.json` still has UID `damini_01`. This confirms that the renamed login maps to the same application identity in the archived snapshot.
+
+**Do not add the snapshot values together.** The 502/6 and 530/7 values are point-in-time aggregate snapshots. The later snapshot may represent a subsequent state; summing them would double-count. The cohort summary lists Damini once using `damini_888`, Demo once, and the Admin Preview placeholder once.
+
+The archived snapshots also show `slotNumber: 1` for these entries. The cohort report therefore contains repeated slot `#1` values. Investigate whether slot number is intended as a unique seat/order or a cohort capacity marker. Do not guess or migrate slots.
+
+### Required account reconciliation process
+
+1. Read Firestore data in a staging environment only.
+2. List VIP invite documents with their document IDs, current login IDs, status and timestamps (never passwords/hashes in report output).
+3. List student profile documents by UID.
+4. List leaderboard entries by UID.
+5. List attempts by document ID and UID.
+6. List XP ledger records by stable UID and entry ID.
+7. List revision vault records and exam drafts by stable UID.
+8. Read report snapshots as fallback evidence only.
+9. Build a reconciliation table: canonical UID, current login, profile name, active status, invite ID, attempt count, XP source, report timestamps and conflicts.
+10. Flag conflicts. Do not automatically resolve conflicts by summing reports or choosing whichever source has a larger number.
+11. Make backups and get approval before applying any account/data migration.
+
+Canonical history should be reconstructed from canonical attempt and ledger records using stable IDs, not by adding aggregate report snapshots.
+
+---
+
+# 5. AUTHENTICATION AND FIRESTORE SECURITY — P0 BLOCKER
+
+This section is a hard safety gate.
+
+## 5.1 Confirmed current architecture
+
+The uploaded source:
+
+- Imports Firebase App and Firestore, but no `firebase/auth` SDK module was found under `src/`.
+- Performs admin/student password checks in browser code inside `src/lib/firestoreService.ts`.
+- Uses deterministic SHA-256 hashes with fixed prefixes: `sankalp_vip_v1:` for student passwords and `sankalp_admin_v1:` for admin passwords.
+- Stores/fetches hashes from Firestore/client-visible records and LocalStorage fallback.
+- Uses browser `sessionStorage` key `getcgl_session_v1` for role/UID session data.
+- Restores admin session by checking app-level admin ID/credentials, not by validating a Firebase Authentication signed-in principal.
+
+A deterministic SHA-256 hash with a fixed prefix is not a password-hashing scheme designed to resist offline guessing. The browser verifies the hash, so the current app-level username/password gate is not a secure identity boundary.
+
+## 5.2 Confirmed Firestore rules problem
+
+In the uploaded `firestore.rules`:
+
+- A global catch-all rule says `allow read, write: if false`.
+- Collection-specific matches then add their own `allow get`, `allow list`, `allow create`, `allow update` or `allow delete` conditions.
+- Firestore authorization combines matching allow rules permissively (a matching allow can grant access); the global deny does not cancel a more specific allow.
+- The inspected entire rules file contains no `request.auth`, `request.auth.uid`, auth claims, admin lookup or signed-in-user check.
+- Some collection rules permit reads using only document ID or data-shape constraints.
+- VIP invite validation allows `currentPassword`.
+
+The result is that schema validation is being used where identity/ownership authorization is required. A person who can access the Firebase project through the web client may be able to read/write data allowed by a schema rule without proving the intended user/admin identity. This is a P0 security issue.
+
+Examples visible in the current rules include:
+
+- Settings `get` for IDs including `adminCredentials`.
+- VIP invite `get` based on a valid document ID and `list` based on slot range.
+- Student `get` based on a valid student UID.
+- Several other collections with schema/data predicates but no authenticated-owner/admin check.
+
+Do not claim the global deny makes these collections safe.
+
+## 5.3 Required target design without a custom server
+
+The owner does not want a custom backend. Respect that constraint.
+
+A safe direction to evaluate is Firebase Authentication (managed service) plus strict Firestore Security Rules:
+
+- Use Firebase Authentication to establish `request.auth`.
+- Keep the application's canonical student UID independent of a mutable login ID and independent of Firebase Auth UID.
+- Add an explicit mapping between Firebase Auth UID and the existing stable application UID. For example, an owner-created account-link document can map `request.auth.uid` to `canonicalStudentUid`; never allow a student to create or edit their own privileged mapping.
+- Provision admin authorization through a trusted owner-controlled process (manual Firebase Console setup or a correctly secured managed claim process). Never let a client create its own admin marker.
+- Rules must verify that the authenticated Firebase user is the mapped owner for student profile, attempts, drafts, responses, revision vault, progress and other private student records.
+- Admin-only collections and writes must require an actual admin authorization condition.
+- Publicly readable question/test content may remain readable only where intended; writes must be admin-only.
+- Do not store admin password hashes in a publicly readable `settings` document.
+- Do not expose `vipInvites` credential data to all signed-in students.
+- Define least-privilege access for every collection and subcollection.
+- Keep progress/attempt deletion prohibited where the existing product policy requires immutable history.
+
+Important identity detail: Firebase Auth UIDs generated by the client may not match the existing application UIDs `damini_01` and `demo_123`. Do not change the application UID just to match Firebase Auth. Preserve the app UID and add a secure mapping, with staging tests for all queries and writes.
+
+## 5.4 Username login and reset constraints
+
+Current IDs include `damini_888` and `demo@123`; neither is necessarily a reachable email address. Firebase Authentication email/password login and reset-email workflows require an email-style identifier, and a client-only admin cannot securely set another user's password.
+
+Before code changes, present a migration design that answers:
+
+1. How will a username map to the Firebase Auth account?
+2. Does each student have a genuine email address, or will the owner choose an internal synthetic login alias?
+3. What happens when the user forgets a password and has no reachable email?
+4. How will the owner reset access without a custom backend?
+5. How will existing password hashes and plaintext values be retired safely?
+6. How will existing sessions be invalidated and reissued?
+7. How will offline access work after the cloud authentication model changes?
+8. How will existing UIDs and history stay stable?
+
+Do not invent email addresses or silently choose a synthetic-email scheme. If synthetic addresses are considered, explicitly explain that an email reset message cannot reach the user and owner-operated recovery will be needed.
+
+## 5.5 Security migration approval gate — do not cross automatically
+
+Before changing production rules or migrating real accounts:
+
+- Build a separate Firebase staging project (or use a separate named Firestore database only if security and configuration isolation are proven).
+- Add Firebase Auth only in a development branch.
+- Create staging user accounts and explicit UID-to-app-UID mappings.
+- Write least-privilege Firestore rules.
+- Add automated Rules Unit Testing (Firebase Emulator Suite if available) using `security_spec.md` as an initial adversarial test list.
+- Verify all currently expected workflows under the new rules.
+- Back up production records without exporting passwords or secrets.
+- Produce an explicit field-by-field migration plan and rollback plan.
+- Ask the owner for approval before any production user/rule/data change.
+
+Never deploy new rules to production before tests prove that:
+- anonymous reads/writes are denied for private data;
+- a student cannot read another student's data;
+- a student cannot modify another student's progress;
+- a student cannot read credentials or admin settings;
+- a student cannot create or elevate an admin account;
+- a student cannot publish/edit tests or questions;
+- an admin can perform intended cohort management;
+- public question/test reads (if required) remain functional;
+- immutable attempts/progress cannot be deleted.
+
+If this security model cannot be made safe under the no-custom-backend constraint, explain the limitation and stop. Do not ship insecure rules to preserve a superficial login experience.
+
+---
+
+# 6. DATA STORAGE AND OWNERSHIP MODEL
+
+The application deliberately uses more than one storage system. Preserve that architecture, but define one owner for each kind of data and a controlled synchronization path.
+
+## 6.1 Firestore collections identified in the rules/service architecture
+
+The inspected rules reference these collections/subcollections:
+
+- `settings`
+- `vipInvites`
+- `students`
+  - `revisionVault`
+  - `testDrafts`
+- `progressBackups`
+- `leaderboard`
+- `questions`
+- `tests`
+- `attempts`
+  - `responses`
+- `tasks`
+- `xpLedger`
+- `presence`
+- `proctorRooms`
+  - `candidates`
+- `sessionLogs`
+- `supportTickets`
+- `reportedQueries`
+- `corrected_questions_bank`
+
+Verify every collection actually used by the latest `firestoreService.ts`; do not assume this list is complete if the code has changed.
+
+## 6.2 LocalStorage
+
+The central local fallback database key in the archive is:
+
+- `getcgl_local_db_v1`
+
+It stores the LocalFallbackDatabase object, including areas for:
+
+- admin credential fallback;
+- scoring/platform configuration;
+- VIP invites;
+- student profiles;
+- leaderboard;
+- question bank;
+- mock tests;
+- attempts and local responses;
+- tasks;
+- revision vault;
+- XP ledger;
+- support tickets;
+- reported queries;
+- corrected question overrides;
+- session logs;
+- deletion tombstones;
+- pending sync operations.
+
+Other observed keys include:
+
+- `getcgl_session_v1` in sessionStorage;
+- `getcgl_github_cms_v1` for GitHub CMS configuration including PAT;
+- `getcgl_firestore_quota_v1`;
+- `getcgl_saved_ai_formulas_v1`;
+- `getcgl_notif_seen_v1`;
+- user-specific daily-goal and mistake-tag keys;
+- exam draft keys in `TcsIonTestEngine.tsx` (for example `getcgl_exam_draft_${uid}_${test.id}` and legacy variants).
+
+Search the entire current project for all storage keys before changing storage contracts.
+
+## 6.3 IndexedDB
+
+The actual database implementation in `src/utils/indexedDbStore.ts` declares:
+
+- Database: `path_to_cgl_idb_v1`
+- Version: `1`
+- Object stores: `kv_db`, `offline_test_packs`, `exam_drafts`, `ai_cache`
+
+Do not trust stale documentation if it names different stores. Use the source implementation as the current truth, and update documentation after verification.
+
+`App.tsx` currently bootstraps the LocalStorage database from IndexedDB only when the browser is offline. A comment explicitly describes this as strict offline fallback; do not reverse that behavior without understanding the intended cloud-first model and testing stale data conflicts.
+
+## 6.4 Static files and Git-based data
+
+Static question-bank content is bundled under `src/data/`.
+
+The `GitReportsSyncCard.tsx` workflow is a report download/sync UI. The inspected source indicates report downloads; do not claim that it automatically commits the reports to GitHub.
+
+`src/utils/githubCodeEditor.ts` and `LiveCodeEditorPanel.tsx` separately connect to the GitHub Contents API to read and commit repository files through a user-supplied Personal Access Token (PAT).
+
+GitHub operations therefore need to be treated as a separate manual CMS workflow, not as automatic synchronization of every student write.
+
+## 6.5 Required source-of-truth policy
+
+Define a written policy for each entity before repairing synchronization:
+
+| Entity | Canonical source / ownership recommendation | Notes |
+|---|---|---|
+| Authentication identity | Firebase Auth + trusted UID mapping after migration | Current app-level hash login is not secure; migration approval required. |
+| Student canonical UID | Existing immutable app UID (`damini_01`, `demo_123`) | Never derive from mutable login. |
+| Login ID / account status | VIP/account record until a new approved auth design replaces it | Avoid profile doc overriding a recent account rename. |
+| Student profile fields | Student profile, with explicit admin-edit synchronization for shared fields | Preserve student-only fields such as profile details and syllabus mastery. |
+| Attempts and responses | Firestore attempt document and response IDs after cloud commit | Deduplicate by immutable attempt ID; never merge aggregate reports by summing. |
+| XP | XP ledger entries, with leaderboard as derived aggregate | Recalculate/reconcile only by unique ledger entry IDs. |
+| Leaderboard | Derived/materialized view from canonical student/XP/attempt data | Rebuild only after a dry-run comparison. |
+| Questions | Existing bundled bank + Firestore admin-managed bank/overrides per current feature | Preserve IDs and content; do not overwrite bundled data with stale remote copy. |
+| Published tests | Firestore/admin test records plus existing static packs where used | Define versioning and snapshot behaviour for in-progress tests. |
+| Exam drafts | LocalStorage/IndexedDB for immediate local durability + Firestore backup when authenticated/online | Use user+test+attempt identity and conflict handling. |
+| Presence/proctor signals | Ephemeral Firestore records | Expire/clean only according to tested TTL/state rules. |
+| Git reports | Exported snapshot artifacts, not canonical transaction source | Keep PII out of public repos. |
+
+## 6.6 Sync defects to repair
+
+### A. Partial update errors are silently ignored
+
+In `updateVipUser()` the invite document is updated, then profile and leaderboard records are updated separately. The inspected code catches and ignores some profile/leaderboard update failures (`.catch(() => {})`) and then applies local state. The offline queue operation is for the VIP invite, not necessarily for every dependent record.
+
+This can leave Firestore invite, student profile and leaderboard inconsistent while the UI appears successful.
+
+Required repair:
+
+- Do not swallow errors.
+- Use an appropriate Firestore batch/transaction when all writes are atomic and size/semantics permit.
+- If operations cannot be atomic, implement an explicit durable outbox with a separate operation for each dependent document.
+- Mark each operation pending/synced/failed with retry count and last error (without sensitive content).
+- Make retries idempotent.
+- Show a clear sync status to Admin.
+- Do not display success until the intended write is either committed remotely or clearly marked as locally queued.
+- Add tests for partial failure at each write step.
+
+### B. Pending sync queue cap
+
+The inspected LocalStorage code truncates `pendingSyncOps` to the latest 500 entries (`slice(-500)`). Tombstone collections are also capped. Silently dropping the oldest unsynced operation/tombstone can lose a user change or allow a deleted stale record to reappear.
+
+Required repair:
+
+- Never silently discard an unacknowledged data operation.
+- If storage is near capacity, surface a durable sync warning and preserve the outbox.
+- Use compaction only when operations are provably superseded by a later acknowledged operation for the same entity/document.
+- Keep tombstones until the corresponding remote delete/archive is confirmed and reconciliation proves stale data cannot resurrect.
+- Define queue schema versioning and migration tests.
+
+### C. Account deletion is inconsistent and destructive
+
+The inspected `deleteVipInvite()` removes the invite, leaderboard, presence and proctor records (some best-effort) and deletes local student/leaderboard/revision data, but the student parent document is configured as non-deletable by Firestore rules. Historical attempts and XP are retained. This can create a ghost profile remotely and destroy local history.
+
+Required repair:
+
+- Replace normal “delete student” UI with deactivate/archive/revoke access.
+- Keep student profile, attempts, responses, XP ledger and revision history.
+- Only remove ephemeral presence/proctor state where appropriate.
+- Make account reactivation possible without creating a second identity.
+- Any genuine data-erasure flow needs a separately approved policy and a full export/backup first.
+
+### D. Snapshot import needs dry-run/conflict handling
+
+Inspect `importLocalCohortSnapshot()` and related export/import code. The archive includes whole-database snapshot logic. It must never import password hashes/plaintext credentials or blindly overwrite canonical data.
+
+Required repair:
+
+- Add import preview/dry-run.
+- Validate schema/version and record counts.
+- Strip all authentication secrets and credential metadata from exported/imported cohort snapshots.
+- Identify entity conflicts by stable ID and timestamp/explicit ownership.
+- Deduplicate attempts and XP by immutable entry/document IDs.
+- Reject malformed or unknown data instead of silently normalizing away important values.
+- Show exact create/update/skip/conflict counts before commit.
+- Require explicit confirmation before applying imports.
+- Retain the previous state for rollback.
+
+### E. Cloud-first / offline behaviour
+
+Keep the existing cloud-first approach when online and LocalStorage/IndexedDB fallback when offline. Test offline bootstrapping, going online, queue replay, duplicate writes, local tombstones and quota failure.
+
+Never assume “online” means a Firestore write succeeded. Distinguish:
+
+- local-only;
+- pending upload;
+- server confirmed;
+- failed/retryable;
+- permanently rejected (e.g. permission denied/schema error).
+
+Do not endlessly retry permanent authorization failures.
+
+### F. Data migration versioning
+
+Add a versioned schema/migration path for LocalStorage/IndexedDB changes. Never change an existing stored field shape without a migration test and old-data fixture. Preserve exam drafts across app upgrades wherever possible.
+
+---
+
+# 7. GITHUB, PUBLIC REPOSITORY AND SECRET SAFETY
+
+## 7.1 Student report privacy
+
+The ZIP contains reports with login IDs, display names, target posts, XP, test counts, score/accuracy metrics and session timestamps. `.gitignore` in the archive does not exclude `reports/`.
+
+The ZIP has no `.git` metadata, so it is unknown whether these files are currently tracked in the original repository or visible through GitHub. Verify this with `git ls-files reports` in the actual repository and inspect repository visibility before publishing.
+
+Required actions:
+
+1. Determine which report files are tracked and whether the repository is public.
+2. Do not publish private student information in a public repository.
+3. Keep static public question-bank content separate from private student progress reports.
+4. Preserve the existing Git-based report feature safely, for example by using a private repository for private snapshots or keeping sensitive reports in properly secured Firestore/storage.
+5. Do not silently delete report files or rewrite Git history.
+6. If sensitive data has already been committed publicly, explain exposure and propose a history cleanup/credential rotation plan; require owner approval before rewriting history.
+7. Make future report exports default to privacy-safe/minimized data and explicit destination checks.
+
+## 7.2 GitHub PAT stored in LocalStorage
+
+The inspected GitHub CMS stores repository configuration and the Personal Access Token under `getcgl_github_cms_v1` in browser LocalStorage. This is vulnerable to exposure if malicious script/XSS runs in the origin and persists across sessions.
+
+Required repair:
+
+- Never hard-code a PAT in source or build output.
+- Do not include PAT in logs, exports, backups or reports.
+- Prefer session-only storage or require re-entry for each editing session rather than persistent LocalStorage.
+- Use a fine-grained, least-privilege token restricted to the one repository and required content permission, with expiry.
+- Warn the owner that any previously exposed token should be revoked/rotated; do not print it.
+- Clear old persisted token settings in a controlled client migration after telling the owner.
+- Keep the existing browser-based GitHub CMS only if its security model is accepted; never claim it is equivalent to a server-side secret vault.
+
+## 7.3 AI API keys
+
+`.env.example` contains `GEMINI_API_KEY`, `APP_URL` and `VITE_GROQ_API_KEY` placeholders. The actual frontend reads `VITE_GROQ_API_KEY` in `src/lib/aiClient.ts`; a `VITE_` variable is compiled into the client bundle and is visible to users.
+
+Required repair:
+
+- Do not bundle a shared secret Groq key into the public frontend.
+- Keep per-user key entry/browser-only use if that is the existing product choice, and clearly explain local storage/exposure implications.
+- Prefer a provider's browser-safe ephemeral key capability if supported and documented, but do not invent one.
+- Otherwise keep AI features optional and provide clear configuration/disabled state.
+- Do not introduce a custom backend just to proxy the key without explicit owner approval.
+- Inspect all environment variable references. Do not add unused secrets to `.env.example` or docs.
+
+---
+
+# 8. EXAM ENGINE — CORRECTNESS AND DATA SAFETY
+
+Do not redesign the examination experience. Repair and test its timing, persistence, scoring and submission behaviour.
+
+## 8.1 Existing exam rules identified in the source
+
+The inspected `tier1Engine.ts` defines Tier-I sectional structure:
+
+- Reasoning: 25 questions.
+- General Awareness: 25 questions.
+- Quantitative Aptitude: 25 questions.
+- English: 25 questions.
+- Total: 100 questions.
+- Total duration: 60 minutes.
+- Section duration: 15 minutes each.
+- Marking: +2 correct, -0.5 incorrect.
+
+The inspected `tier2Engine.ts` defines Tier-II mock structure:
+
+- Quant: 25 questions.
+- Reasoning: 25 questions.
+- English: 30 questions.
+- General Awareness: 20 questions.
+- Total: 100 questions.
+- Total duration: 80 minutes.
+- Section duration: 20 minutes each.
+- Marking: +3 correct, -1 incorrect.
+
+`createTier2FullMock()` deliberately uses the existing sectional exam-mode enum and a 20-minute section duration. `TcsIonTestEngine.tsx` checks `examMode === 'tier1_sectional'` to apply sectional behaviour. Do not “fix” this by disabling Tier-II section timing. If renaming the enum internally, preserve the existing serialized/test compatibility with a migration.
+
+Verify all these values against existing tests and app configuration before changing them. Treat them as the archive's current implementation, not a guarantee of current SSC notification rules.
+
+## 8.2 Scoring and result contracts
+
+Inspect and test:
+
+- `calculateTestOutcome()` and related functions in `src/utils/examEngine.ts`.
+- Custom scoring configuration from Firestore/platform settings.
+- Correct/incorrect/unattempted counting.
+- Negative marks only for wrong answers, not skipped questions.
+- Score bounds/clamping if currently required by product logic.
+- Accuracy denominator (attempted vs total) and consistency across UI/report.
+- XP eligibility/completion threshold and no-repeat XP rules.
+- Subject and topic breakdown.
+- Revision Vault updates.
+- Leaderboard and XP ledger updates.
+
+Do not change existing marking schemes merely to match a guessed exam pattern. Keep configurable settings authoritative where designed, and document default/fallback behaviour.
+
+## 8.3 Confirmed risk: duplicate submission
+
+In the inspected `TcsIonTestEngine.tsx`:
+
+- Submission uses React `submitting` state to block duplicate calls.
+- `handleConfirmSubmit()` sets the state asynchronously.
+- The result path uses `submitTestAttempt()`.
+- Attempt IDs are generated by the persistence flow; verify whether a repeated call creates a fresh attempt ID.
+
+A fast double-click, timer-triggered submission racing with manual submission, or remount/retry may submit twice unless there is a synchronous lock and idempotent server/local operation.
+
+Required repair:
+
+- Use a synchronous `useRef`/single-flight guard in addition to UI state.
+- Give each exam session a stable submission/idempotency identifier persisted in the draft.
+- Make submit idempotent by checking that identifier and canonical attempt ID before creating a second result.
+- Ensure XP ledger writes are independently idempotent by unique ledger entry ID.
+- Ensure an offline submit replays exactly once after reconnect.
+- Do not simply disable the submit button visually; test the service layer too.
+
+## 8.4 Timer correctness
+
+The inspected exam engine uses a one-second `setInterval` countdown. Browser background throttling, device sleep, tab suspension or timer drift can make a decrement-per-tick timer inaccurate.
+
+Required investigation and repair:
+
+- Test foreground/background tab transitions.
+- Test device sleep/resume and offline/online transitions.
+- Compare timer to wall-clock elapsed time.
+- If needed, persist a deadline/elapsed-time basis rather than relying exclusively on number of interval callbacks.
+- Define whether practice tests pause on intentional exit/resume or continue to run; do not silently change the intended exam policy.
+- For sectional exams, ensure section deadline and total exam deadline cannot drift or be bypassed.
+- Prevent stale drafts from extending an examination improperly.
+- Verify final submission exactly once when global or section time reaches zero.
+
+## 8.5 Auto-save and resume
+
+The source writes exam drafts to LocalStorage and has a Firestore draft path/checkpoint. Verify the exact throttle and error behaviour.
+
+Test:
+
+- Answer selected then immediate reload.
+- Mark for review then immediate reload.
+- Browser crash/reopen.
+- Offline test start and completion.
+- Reconnection while draft is dirty.
+- Same account on two tabs (conflict handling).
+- Switch language/display state if supported.
+- Section transition.
+- Timer reaches zero while an upload is pending.
+- Restore draft after app update.
+
+A draft must be scoped to stable application UID + test version + exam session/attempt ID. A username rename must not orphan it.
+
+## 8.6 Language display
+
+The source README/documentation may describe an English/Hindi toggle, but the inspected exam engine appears to render bilingual content and saves a language field fixed to English; no obvious active language toggle was found in the searched engine state.
+
+Do not invent a new UI feature. Audit the actual component and confirm:
+
+- Are both English and Hindi question/option texts displayed together?
+- Is there a real selectable language toggle elsewhere?
+- Does the chosen language persist in draft and result?
+
+Update docs to describe the actual implementation. If a real language toggle is a required existing feature but missing, report it and implement only after confirming intended UX.
+
+## 8.7 End-to-end exam acceptance
+
+For both Tier-I and Tier-II:
+
+1. Student logs in.
+2. Dashboard loads correct account identity.
+3. Student opens a published mock.
+4. Exam metadata/sections/marking are correct.
+5. Start is recorded once.
+6. Answer questions and navigate with mouse and keyboard.
+7. Mark and unmark questions for review.
+8. Change answers and verify autosave.
+9. Reload/resume and verify all responses/time/section restore correctly.
+10. Allow a section timer to expire in a controlled short-duration fixture.
+11. Submit manually and test double-click/race.
+12. Submit due to timeout.
+13. Result has correct attempted/correct/wrong/unanswered counts and score.
+14. XP ledger updates at most once.
+15. Attempt and responses persist at most once.
+16. Student completed-tests history shows the result.
+17. Dashboard analytics and leaderboard update consistently.
+18. Admin analytics show the same attempt.
+19. Offline result replays once when network returns.
+
+---
+
+# 9. OTHER FEATURE AUDIT AND REPAIR REQUIREMENTS
+
+Do not skip modules simply because the top-level screen loads.
+
+## 9.1 Student dashboard and profile
+
+Inspect `StudentDashboard.tsx`, profile panels, analytics engine, progress charts, completed/pending test panels and notification components.
+
+Verify:
+
+- Statistics derive from canonical attempts/ledger and are not double-counted.
+- Missing/loading/empty/error/offline states are distinct.
+- Login rename does not break user-specific LocalStorage keys that should use stable UID.
+- Profile edits preserve syllabus mastery, avatar and student-only fields.
+- Daily goals and mistake tags survive reload and account switch correctly.
+- Logout clears only session-scoped state, not durable student progress.
+- Account switching cannot leak the previous student's local data.
+
+## 9.2 Admin User Management
+
+Verify every operation beyond button visibility:
+
+- Correct roster membership and count.
+- Current login and correct display name.
+- Stable UID display/diagnostics (do not expose sensitive internal fields unnecessarily).
+- Creation date and last update.
+- Edit profile.
+- Change login ID without changing UID.
+- Activate/deactivate.
+- Secure password recovery workflow chosen in Section 5.
+- Duplicate login prevention, including normalization collisions.
+- Account state refresh after reload.
+- Historical progress remains visible after rename/deactivation/reactivation.
+- No plaintext password or hash appears in the browser UI, list response, logs or report.
+
+## 9.3 Question bank and PDF import
+
+Inspect:
+
+- `AdminPdfIngestor.tsx`
+- `PdfQuestionExtractor.tsx`
+- `pdfIngestor.ts`
+- `pdfQuestionExtractor.ts`
+- `bulkParser.ts`
+- `questionSchema.ts`
+- all static bank files
+
+Verify:
+
+- PDF extraction does not silently invent missing options or correct answers.
+- Bilingual text is preserved.
+- Correct answer index remains valid (0–3 where four options are required).
+- Subject/topic/difficulty schema is valid.
+- Duplicate question ID detection and duplicate content detection are distinct.
+- Bulk import preview shows exactly what will be added/rejected.
+- Failed import does not partially corrupt the bank.
+- Existing question references in tests remain valid.
+- Question wipe/delete actions require strong confirmation and backup.
+- Corrected-question overrides do not destructively rewrite source question data.
+
+## 9.4 Mock Test Builder and publishing
+
+Verify:
+
+- Questions assigned to correct subject/section.
+- Test question count and IDs valid.
+- Duration and section timing are consistent.
+- Marking settings match the test definition.
+- Publish/unpublish permissions are admin-only after auth migration.
+- A published test snapshot cannot change underneath an active attempt without versioning.
+- Repeated daily generation does not create duplicate tests.
+- Student sees only intended published tests.
+- Existing custom test IDs and history are retained.
+
+## 9.5 Analytics, XP and leaderboard
+
+Verify calculations from canonical attempt/XP entries. Avoid deriving “truth” from old report aggregate snapshots if canonical records exist.
+
+- Stable UID joins across invite/profile/attempt/XP/leaderboard.
+- No double-counted attempts.
+- No duplicate XP awards.
+- Consistent score/accuracy definitions.
+- Tie handling and rank sorting deterministic.
+- Deactivated accounts handled intentionally.
+- Admin preview is excluded from real student counts.
+
+## 9.6 Presence, WebRTC proctoring and session logs
+
+Inspect `AdminLiveProctorPanel.tsx`, `useStudentProctorPublisher.ts`, `useStudentActivityTracker.ts`, `presence`, `proctorRooms` and `sessionLogs` service paths.
+
+Verify:
+
+- Only authorized admin sees cohort streams after authentication migration.
+- Student can only publish their own presence/proctor data.
+- Signalling candidate records are scoped to correct room/session.
+- Camera denial/error/offline state is handled without crashing the exam unnecessarily.
+- Cleanup happens on logout, test completion and disconnect.
+- Old presence records do not remain “online” indefinitely.
+- No webcam frames or sensitive data are written to public reports.
+
+## 9.7 DEST typing and Computer Knowledge simulator
+
+Inspect `DestComputerSimulator.tsx` and `destSimulator.ts`.
+
+Verify:
+
+- Timer behaviour and reset.
+- Keystroke accuracy and gross/net typing speed calculation.
+- Backspace/correction treatment.
+- Text selection/paste policy matches simulator rules.
+- Qualification/pass criteria use the intended thresholds.
+- Computer Knowledge question count, answer selection, marking and result calculation.
+- Results persist under the stable student UID.
+- Keyboard/mobile layout does not break.
+
+The archive's current test fixtures indicate a Computer Knowledge set of 20 questions and 15-minute timing, and a DEST simulator configuration; confirm exact business rules from the code/tests before changing them.
+
+## 9.8 Offline/PWA and notifications
+
+Inspect PWA registration/update lifecycle and all offline code.
+
+- Offline shell loads.
+- Cached published tests/questions load as intended.
+- In-progress exam does not unexpectedly reload because a new service worker auto-updates.
+- A pending update can be deferred until the active exam is complete, if required by browser behaviour.
+- Update activation/reload is communicated clearly.
+- Cache includes the required image/PDF assets; do not increase cache indefinitely.
+- Cache versioning and stale data recovery are tested.
+- Notifications do not show another student's data after account switching.
+
+The inspected `vite.config.ts` uses `registerType: 'autoUpdate'` and Workbox glob patterns for JS/CSS/HTML/icons/PNG/SVG/fonts. JPEG/WebP asset inclusion and active-exam update behaviour need verification. Do not blindly change the PWA strategy without tests.
+
+---
+
+# 10. BUILD, CONFIGURATION AND DEPLOYMENT ISSUES
+
+## 10.1 GitHub Pages base path
+
+`package.json` declares homepage `https://koshti-ji.github.io/SSC-CGL/`.
+
+The inspected `vite.config.ts` sets:
+
+`const base = process.env.BASE_PATH || '/';`
+
+Therefore the default Vite base is `/`, not `/SSC-CGL/`. The README's deployment instructions must be checked against the actual build configuration. A GitHub Pages project site normally needs the `/SSC-CGL/` base unless the deployment workflow explicitly supplies `BASE_PATH=/SSC-CGL/`.
+
+Required repair:
+
+- Inspect any actual GitHub Actions workflow/Pages build command in the live repository checkout.
+- Do not assume the ZIP contains GitHub Actions; verify.
+- Make base path an explicit build input for GitHub Pages and `/` for root-domain previews.
+- Verify built asset URLs, PWA manifest scope/start_url, icons, hash routes and refresh/404 fallback.
+- Test `/`, `/#/`, `/#/om` and `/#/dest-simulator` in both root and `/SSC-CGL/` deployments.
+- Do not use a single wrong base for every hosting platform.
+
+## 10.2 Documentation mismatch
+
+The uploaded README describes `npm run deploy`, but the inspected `package.json` has no `deploy` script and no `gh-pages` dependency. Update documentation only after choosing and verifying the actual deployment workflow.
+
+The README says there are 15 test suites / around 80 tests, while the archive contains 24 `*.test.ts` files. The `package.json` test command explicitly lists 23 files and omits `src/utils/studyCoach.test.ts`. Correct this with a maintainable test-discovery script or explicit full test list. Verify exact executed test count; do not quote the number of test cases based only on file count.
+
+## 10.3 Cross-platform scripts
+
+The `clean` script uses `rm -rf dist`, which is not native Windows PowerShell syntax. If Windows development is supported, replace it with a cross-platform Node script or another already-installed cross-platform mechanism, and test it on Windows-compatible shell or document the required shell.
+
+## 10.4 Dependency health
+
+- No lockfile was present in the uploaded ZIP listing.
+- Generate a lockfile only after dependency install resolves successfully.
+- Avoid blindly upgrading dependencies.
+- Run `npm audit`/relevant advisories only if network is available; record date and source.
+- Remove dependencies only after import and build analysis proves they are unused.
+- Do not use `npm update` as a generic repair.
+
+## 10.5 Asset duplication
+
+The inspected `vite.config.ts` includes a custom `copy-unbundled-src-assets` build hook that copies `src/assets` into `dist/src/assets`. The hero image is imported by the React code. Verify whether Vite already bundles imported assets and whether the custom copy creates duplicate output. Remove/adjust only after inspecting runtime references and comparing build output. Preserve the original source image and all visual assets.
+
+---
+
+# 11. PERFORMANCE AUDIT — MEASURE, DO NOT GUESS
+
+Capture a baseline before performance changes, using the same device, browser, network profile, build mode and test URL as the after measurement.
+
+Record:
+
+- Lighthouse Performance score.
+- LCP.
+- INP (or the closest available lab proxy if field INP is unavailable; label it clearly).
+- CLS.
+- FCP.
+- TBT.
+- Total JS/CSS/image transfer size and gzip/brotli size.
+- Largest chunks and dependencies.
+- Number of network requests.
+- Firestore reads/writes for a defined user workflow where observable.
+- Memory usage before/after a fixed interaction period if browser tools allow.
+- Offline startup and exam resume performance.
+
+Targets:
+
+- LCP ≤ 2.5 seconds.
+- INP ≤ 200 ms.
+- CLS ≤ 0.1.
+
+These are targets, not assumed results.
+
+Potential optimization areas to investigate after baseline:
+
+1. Lazy-loaded admin/exam/PDF/proctor components.
+2. Unnecessary re-renders in large `StudentDashboard`, `AdminControlCenter` and exam engine.
+3. Firestore listener lifecycle and excessive reads.
+4. Query filtering and snapshot payload sizes.
+5. Duplicate image assets and hero image loading.
+6. PDF.js worker/bundle loading.
+7. PWA cache sizing and precache scope.
+8. Expensive analytics recalculated on every render.
+9. Unbounded local logs/queues/caches.
+10. Motion/reduced-motion and animation cost on low-end phones.
+
+Do not optimize by removing features, lowering question quality, reducing exam accuracy, skipping persistence or weakening security.
+
+Report before/after numbers only when actually measured. If Lighthouse/browser access is unavailable, say “not measured” and provide the exact command/device steps for the owner to run.
+
+---
+
+# 12. TESTING STRATEGY AND KNOWN TEST GAP
+
+## 12.1 Existing test configuration
+
+The archive's `package.json` test command uses `tsx --test` and explicitly lists 23 test files. The source ZIP contains 24 `*.test.ts` files. `src/utils/studyCoach.test.ts` exists but is omitted from the script.
+
+The archive has unit tests for core utilities including exam calculations, Tier-I/Tier-II logic, local fallback store, sync, analytics, PDF parsing, GitHub editing, route resolution and other functions.
+
+There are no declared Playwright, Cypress, Vitest or React Testing Library dependencies in the inspected package manifest. Do not claim browser E2E coverage unless a browser test tool is installed and tests are actually executed.
+
+## 12.2 Required local verification commands
+
+Use Node >=22 as declared by the project. After dependency install and lockfile creation, run and report:
+
+```bash
+node --version
+npm --version
+npm ls --depth=0
+npm test
+npm run lint
+npm run build
+```
+
+Then serve the production build and test it in a browser:
+
+```bash
+npm run preview
+```
+
+Adapt the host/port only if the existing scripts require it. Do not assume a failed install/build is a successful test. Preserve raw error output (without secrets) in the report.
+
+## 12.3 Test coverage that must be added
+
+### Account identity tests
+
+- Damini UID `damini_01` allowed as real cohort user.
+- Damini current login `damini_888` is not treated as a UID.
+- Demo UID `demo_123` allowed.
+- Admin preview and dummy placeholders excluded.
+- Admin roster returns Damini exactly once and Demo exactly once.
+- Current login ID sourced from correct canonical account record.
+- Profile timestamps and Firestore Timestamp/numeric timestamps merge correctly.
+- Duplicate/normalized login IDs are rejected.
+- Rename retains UID and all historical records.
+
+### Password/security tests
+
+- No Admin roster DTO contains `password`, `currentPassword` or password hash.
+- Local snapshot export removes all credentials.
+- New account writes do not include plaintext password fields.
+- Rules deny anonymous/private data access in emulator tests.
+- Student A cannot read/write Student B.
+- Student cannot perform admin writes.
+- Student cannot read admin credentials/invites for other users.
+- Auth UID to stable UID mapping cannot be self-created or changed by a student.
+
+### Synchronization tests
+
+- Invite update + profile update + leaderboard update succeeds.
+- Failure of each write is recorded and retried.
+- Local operation is not shown as cloud-confirmed until commit succeeds.
+- Queue entries are not silently dropped at capacity.
+- Tombstones survive restart and cannot resurrect deleted data.
+- Retry is idempotent.
+- Snapshot import dry-run shows conflicts and strips credentials.
+- Offline-to-online reconnect processes each op once.
+
+### Exam engine tests
+
+- Tier-I section/time/marking settings.
+- Tier-II section/time/marking settings.
+- Score for all-correct, all-wrong, all-unanswered and mixed answers.
+- Wrong answers negative-marked once; skipped answers not negative-marked.
+- Timer drift, tab background and resume.
+- Simultaneous submit attempts create exactly one attempt.
+- Exactly one XP ledger entry.
+- Draft saved/restored across reload/offline.
+- Result, attempt, responses, leaderboard and analytics agree.
+
+### UI/browser tests
+
+- Login, logout, session restore and route guard.
+- Student dashboard critical actions.
+- Admin roster search/filter/edit/activate/deactivate.
+- Mock builder create/publish/unpublish.
+- PDF import preview and rejection handling.
+- Exam complete flow.
+- Revision Vault and profile edit.
+- DEST and Computer Knowledge flow.
+- Offline mode and sync status.
+- Mobile/tablet/desktop layouts.
+- Keyboard focus, modal close/escape, button disabled/loading/error states.
+
+## 12.4 Required complete workflow regression
+
+At minimum execute and document this full workflow in a staging environment:
+
+`Student login → Dashboard → Select published mock → Start exam → Answer questions → Mark for review → Reload/resume → Submit → Calculate result → Persist attempt/responses → Award XP once → Update progress/leaderboard → Display in student history → Display in Admin analytics → Export a safe report.`
+
+Repeat with offline interruption and reconnection.
+
+---
+
+# 13. PHASED IMPLEMENTATION PLAN
+
+AI Studio must follow the phases in order. At the end of each phase, stop and report before proceeding to the next major phase. A prompt for one phase must not authorize unrelated changes.
+
+## PHASE 0 — Protect the project and establish the workspace
+
+Tasks:
+
+1. Confirm the current project root and all source files.
+2. Make a complete untouched backup of the source ZIP/tree.
+3. Create a separate development copy/branch.
+4. Record file inventory and archive checksum.
+5. Confirm no production Firebase writes, GitHub commits or deployment can be triggered from the working environment.
+6. Detect whether `.git` exists and report tracked/untracked files.
+7. Do not alter student data or environment credentials.
+
+Exit criteria: original backup verified; dev copy isolated; no production connection used for tests.
+
+## PHASE 1 — Re-audit current source and establish baseline
+
+Tasks:
+
+1. Re-read the full actual repository, not only README.
+2. Compare current files with Section 2–12 source findings.
+3. Update findings where the current source differs.
+4. Map imports, callers, routes, contexts, services, storage keys, Firestore collections and tests.
+5. Run existing tests/build/type checks before repairs if dependencies are available.
+6. Record baseline bundle/asset sizes and Lighthouse metrics if browser access is available.
+7. Create/refresh the engineering bug register.
+
+Deliverables in the development copy:
+
+- `docs/engineering/ARCHITECTURE_AUDIT.md`
+- `docs/engineering/DEPENDENCY_MAP.md`
+- `docs/engineering/DATA_FLOW_MAP.md`
+- `docs/engineering/BUG_REGISTER.md`
+- `docs/engineering/BASELINE_REPORT.md`
+
+Do not modify production data or deploy.
+
+## PHASE 2 — Repair stable account identity and Admin roster
+
+Scope:
+
+- `src/utils/sessionAndOverrides.ts`
+- `src/utils/adminCommandCenter.ts`
+- `src/components/AdminUserManagementTab.tsx`
+- related types/tests and all callers
+
+Tasks:
+
+1. Fix `BLOCKED_DUMMY_UIDS` policy so Damini and Demo are not filtered.
+2. Keep only actual system placeholders excluded.
+3. Keep canonical UID separate from login ID.
+4. Fix Admin roster merge precedence for account-owned vs profile-owned fields.
+5. Add account creation timestamps and accurate display.
+6. Update filters/analytics/proctor/leaderboard consistently.
+7. Add tests for Damini, Demo and internal placeholders.
+8. Do not change live data and do not merge archived reports.
+
+Exit criteria: unit tests prove both real accounts appear exactly once with correct UID/current login; all placeholders remain excluded.
+
+## PHASE 3 — Design and test secure authentication migration (approval gate)
+
+Scope:
+
+- `src/lib/firebase.ts`
+- `src/lib/firestoreService.ts`
+- `src/components/AuthGateway.tsx`
+- session restoration in `src/App.tsx`
+- `firestore.rules`
+- `security_spec.md`
+
+First create a written design; do not deploy or migrate real users.
+
+Tasks:
+
+1. Compare Firebase Auth options with the username-based login requirement.
+2. Design canonical app UID ↔ Firebase Auth UID mapping.
+3. Define how admin is provisioned securely.
+4. Define username mapping, deactivation, session revocation and reset recovery.
+5. Define old hash/plaintext retirement and offline behaviour.
+6. Implement in isolated staging only after owner approves the design.
+7. Test rules with Firebase Emulator/Rules Unit Testing.
+8. Verify all existing app operations under the new security model.
+
+Exit criteria: design approved; staging auth and rules pass every relevant adversarial test; no production rules changed.
+
+## PHASE 4 — Remove plaintext password exposure and repair account lifecycle
+
+After Phase 3 design has an accepted recovery path:
+
+1. Remove passwords from Admin row types and UI.
+2. Remove plaintext password writes and schema allowance.
+3. Add safe change/reset workflow consistent with the approved Auth model.
+4. Remove credential metadata from exports/backups.
+5. Prepare a backup-first legacy cleanup migration.
+6. Test account creation, rename, deactivation/reactivation, duplicate handling and historical records.
+7. Replace destructive delete with soft deactivation/archive.
+
+Exit criteria: no plaintext password exposure in code/UI/exports; safe reset method proven in staging; student history preserved.
+
+## PHASE 5 — Repair data synchronization and offline durability
+
+Scope:
+
+- `src/utils/localFallbackStore.ts`
+- `src/utils/indexedDbStore.ts`
+- `src/utils/cloudFirstSync.ts`
+- `src/hooks/useLiveDataSync.ts`
+- `src/lib/firestoreService.ts`
+- import/export/report components
+
+Tasks:
+
+1. Remove swallowed failures in multi-document updates.
+2. Add durable outbox state and idempotent retries.
+3. Prevent queue truncation from losing unacknowledged operations.
+4. Retain tombstones until remote state is confirmed.
+5. Add explicit sync status/error UI.
+6. Add safe snapshot import preview, validation and conflict resolution.
+7. Exclude credentials from exports.
+8. Make offline-to-online replay recoverable and idempotent.
+9. Add old-schema migration tests for IndexedDB/LocalStorage.
+
+Exit criteria: offline/reconnect and injected failure tests pass with no lost/duplicated records.
+
+## PHASE 6 — Repair exam engine correctness
+
+Scope:
+
+- `src/components/TcsIonTestEngine.tsx`
+- `src/utils/examEngine.ts`
+- `src/utils/tier1Engine.ts`
+- `src/utils/tier2Engine.ts`
+- attempt/response storage and tests
+
+Tasks:
+
+1. Audit timing and sectional transitions.
+2. Add synchronous submission lock and idempotency key.
+3. Ensure one attempt, one response set and one XP award.
+4. Validate scores/negative marking/accuracy calculations.
+5. Verify draft persistence/resume under network and browser lifecycle changes.
+6. Keep Tier-I and Tier-II current section duration semantics.
+7. Verify bilingual content and document actual language controls.
+8. Add tests for all scenarios in Section 8.
+
+Exit criteria: full exam flow passes on staging for both Tier-I and Tier-II, online and offline.
+
+## PHASE 7 — Question banks, PDF imports and mock builder
+
+Tasks:
+
+1. Validate static bank schemas and counts without changing content.
+2. Test PDF extraction/parsing and all error conditions.
+3. Add dry-run and rollback-safe import.
+4. Validate question IDs, option count, correct index and bilingual content.
+5. Test test-builder selection, section/duration/marks and publish rules.
+6. Preserve current published tests and test history.
+
+Exit criteria: import/build/publish flow passes with dataset diff showing no unintended source-bank changes.
+
+## PHASE 8 — Student/Admin modules and supporting features
+
+Tasks:
+
+1. Audit profile and dashboard analytics.
+2. Verify Revision Vault, notifications, leaderboard, XP and syllabus mastery.
+3. Verify Admin cohort reporting, support and tasks.
+4. Verify WebRTC/presence cleanup and permissions.
+5. Verify DEST and Computer Knowledge simulators.
+6. Verify AI study tools and key handling.
+7. Verify every modal/action/loading/error state.
+
+Exit criteria: all existing primary modules tested; known unavailable dependencies documented.
+
+## PHASE 9 — Privacy, GitHub CMS and PWA safety
+
+Tasks:
+
+1. Verify whether `reports/` is public/tracked.
+2. Protect private student reports without destroying Git-based workflow.
+3. Make GitHub PAT handling session-only/re-entry or another accepted approach.
+4. Remove secrets from exports/logs.
+5. Verify AI key exposure boundaries.
+6. Test service worker updates during an active exam.
+7. Test PWA offline assets/cache and GitHub Pages route fallback.
+
+Exit criteria: no private report or credential is newly published; PWA does not interrupt an active exam; token exposure is documented and reduced.
+
+## PHASE 10 — Performance optimization
+
+Only after correctness/security tests pass:
+
+1. Compare baseline vs repaired measurements.
+2. Optimize lazy chunks, rerenders, queries and assets where measured.
+3. Avoid large unneeded cache payloads.
+4. Retest exam and sync after every optimization.
+5. Record exact before/after data.
+
+Exit criteria: performance measurements reproduced and no functional regression.
+
+## PHASE 11 — Isolated public preview
+
+Requirements:
+
+- Separate preview URL.
+- Separate Firebase staging project/config, not production Firestore.
+- Test student records only; do not copy real passwords or real personal data into staging.
+- Admin preview ability without production admin credentials.
+- Student login and examination workflows in staging.
+- Separate Git branch/repository/hosting deployment.
+- Correct base path for selected hosting.
+- Confirm the actual URL by opening it in a browser after deployment.
+
+Possible static hosting: GitHub Pages under a separate repository/preview branch or Vercel. Choose only after verifying configuration compatibility. Do not claim a preview exists until opened and tested.
+
+Exit criteria: student and Admin test workflows pass on the public staging URL; no production data can be written.
+
+## PHASE 12 — Final QA, documentation and owner approval
+
+Deliver:
+
+- Repaired development source.
+- Test report with pass/fail/skipped and exact commands.
+- Security migration status and rule test results.
+- Account reconciliation result (redact secrets).
+- Data migration report (only if approved/executed).
+- Before/after performance report.
+- Preview URL and verification evidence.
+- Deployment runbook.
+- Rollback guide.
+- List of remaining bugs and untested features.
+
+Production release requires a separate, explicit owner approval after personal preview testing. No automatic production deployment.
+
+---
+
+# 14. MANUAL QA CHECKLIST FOR THE OWNER
+
+After a verified staging preview is supplied, test these workflows personally.
+
+## Damini account
+
+- Log in using the current login ID `damini_888` (credentials are entered privately by the owner; never include them in source or reports).
+- Confirm correct student name/profile.
+- Confirm old attempts, XP, revision data and test history remain associated with UID `damini_01`.
+- Confirm Admin sees exactly one Damini row.
+- Change a harmless profile field in staging and verify it after reload.
+- Change login ID in staging only (if testing that workflow) and confirm UID/history do not change.
+- Deactivate/reactivate in staging and verify history is retained.
+
+## Demo account
+
+- Log in using `demo@123` with staging credentials.
+- Confirm UID remains `demo_123`.
+- Confirm one Admin roster row.
+- Confirm result/attempt/XP remains associated with the same UID.
+
+## Admin account management
+
+- Search both accounts.
+- Edit name and target post.
+- Edit login ID without creating duplicates.
+- Activate/deactivate.
+- Confirm creation date and last update display correctly.
+- Confirm no password is visible or copied.
+- Execute only the approved password recovery process.
+
+## Exam flow
+
+- Start a staging test.
+- Answer, skip, mark for review, change answer.
+- Navigate sections.
+- Wait for timer expiry in a short test fixture.
+- Submit manually and by timeout.
+- Double-click submit in a test fixture.
+- Refresh/reopen and resume.
+- Check final score and Admin analytics.
+- Disconnect/reconnect network in a controlled staging run.
+
+## Mobile/desktop
+
+- Test a narrow phone viewport.
+- Test tablet width.
+- Test desktop layout.
+- Confirm buttons, dropdowns, dialogs, question palette and timers remain usable.
+- Confirm no page overflow hides exam submission or navigation.
+
+---
+
+# 15. BUG PRIORITY REGISTER (INITIAL)
+
+The following are priorities based on the inspected ZIP. Re-verify in the current workspace.
+
+| Priority | Finding | Evidence/location | Required action |
+|---|---|---|---|
+| P0 | Firestore rules have no auth/owner/admin identity check in inspected rules; collection-level allows depend on document/schema conditions | `firestore.rules`, `security_spec.md` | Design and test Firebase Auth + least-privilege rules in staging; do not deploy to production without approval. |
+| P0 | Client-side deterministic SHA-256 ID/password gate is used instead of Firebase Auth | `firestoreService.ts`, `AuthGateway.tsx`, `firebase.ts` | Plan secure managed-auth migration; no custom backend unless approved. |
+| P0 | Plaintext `currentPassword` is persisted and exposed in Admin roster model/UI | `firestoreService.ts`, `AdminUserManagementTab.tsx`, `adminCommandCenter.ts`, `exam.ts`, `firestore.rules` | Stop new exposure, remove from UI/schema/write/export, backup-first legacy cleanup. |
+| P1 | Real Damini and Demo UIDs are hard-blocked in admin “real cohort” filter | `sessionAndOverrides.ts`, `adminCommandCenter.ts`, related tests/callers | Correct dummy filter and add regression tests. |
+| P1 | Admin roster always prefers student profile fields over newer invite values | `adminCommandCenter.ts` | Define field ownership/timestamp merge; show current login reliably. |
+| P1 | VIP update path swallows some profile/leaderboard write failures and can leave partial state | `firestoreService.ts` `updateVipUser()` | Atomic batch or durable independent outbox; surfaced failures and retries. |
+| P1 | Pending sync operations/tombstones are capped at 500, risking silent loss/resurrection | `localFallbackStore.ts` | Never discard unacknowledged operations; durable queue compaction rules. |
+| P1 | Account deletion removes local student/revision state while remote student parent is non-deletable; history semantics inconsistent | `firestoreService.ts` `deleteVipInvite()` and rules | Replace with soft deactivation/archive, preserve history. |
+| P1 | Snapshot export/import can carry credential metadata and import can merge without safe conflict preview | `firestoreService.ts` and local snapshot functions | Credential-safe export, dry-run, idempotent conflict resolution. |
+| P1 | GitHub PAT is persistently stored in LocalStorage | `githubCodeEditor.ts`, `LiveCodeEditorPanel.tsx` | Session-only/re-entry, token scope/rotation guidance, no logging. |
+| P1 | Student reports with personal progress data are in `reports/`, not ignored by `.gitignore`; public tracking unknown | `reports/`, `.gitignore` | Inspect git tracking/visibility; prevent public exposure; no history rewrite without approval. |
+| P1 | Potential duplicate exam submission race | `TcsIonTestEngine.tsx`, `examEngine.ts` | Synchronous guard + persistent idempotency key and tests. |
+| P1 | Vite default base `/` may not match GitHub Pages `/SSC-CGL/` path | `vite.config.ts`, package homepage, README | Ensure build sets correct base and verify actual URL. |
+| P2 | Test script omits one existing test file and documentation test counts are stale | `package.json`, `src/utils/studyCoach.test.ts`, README | Include all tests and update docs to actual counts. |
+| P2 | README deployment command `npm run deploy` not present in package manifest | `README.md`, `package.json` | Correct instructions based on actual deployment workflow. |
+| P2 | PWA `autoUpdate` may interrupt active exam; cache patterns need image verification | `vite.config.ts` | Test active exam update and asset caching; defer update safely if needed. |
+| P2 | IndexedDB docs may be stale compared with actual object-store names | `indexedDbStore.ts`, docs | Update docs to actual implementation. |
+| P2 | Asset-copy hook may duplicate Vite-imported assets | `vite.config.ts`, imported asset references | Measure `dist`; remove only if confirmed redundant. |
+| P2 | Timer countdown uses `setInterval`; background throttling can cause drift | `TcsIonTestEngine.tsx` | Browser lifecycle tests and wall-clock/deadline design if reproduced. |
+| P2 | Windows `clean` script uses `rm -rf` | `package.json` | Cross-platform alternative if Windows is supported. |
+| P3 | UI accessibility/loading/error/responsive inconsistencies may exist across modules | All components | Browser audit, fix confirmed defects without redesign. |
+| P3 | Large components/services may have maintainability/performance hotspots | `StudentDashboard.tsx`, `AdminControlCenter.tsx`, `firestoreService.ts`, exam engine | Profile first; refactor only with tests and small patches. |
+
+P0 means security/data exposure and must be resolved before real-user preview. P1 means core data/account/exam reliability. P2 means deployment/performance/configuration. P3 means UX/maintainability.
+
+---
+
+# 16. REQUIRED ENGINEERING DOCUMENTS
+
+Maintain these documents in the development working copy and update them after every phase:
+
+- `docs/engineering/ARCHITECTURE_AUDIT.md`
+- `docs/engineering/DEPENDENCY_MAP.md`
+- `docs/engineering/DATA_FLOW_MAP.md`
+- `docs/engineering/BUG_REGISTER.md`
+- `docs/engineering/REPAIR_LOG.md`
+- `docs/engineering/TEST_REPORT.md`
+- `docs/engineering/SECURITY_MIGRATION_PLAN.md`
+- `docs/engineering/DATA_MIGRATION_PLAN.md` (only if migration is needed)
+- `docs/engineering/PERFORMANCE_REPORT.md`
+- `docs/engineering/PREVIEW_DEPLOYMENT.md`
+- `docs/engineering/ROLLBACK.md`
+
+These are engineering documentation files, not replacements for actual code repairs or tests.
+
+---
+
+# 17. REQUIRED FORMAT FOR EACH PHASE REPORT
+
+At the end of each phase, report exactly:
+
+## Phase status
+- Phase number/name:
+- Status: COMPLETE / PARTIAL / BLOCKED / NOT STARTED
+
+## Findings
+- Confirmed root causes:
+- Source files/lines:
+- Assumptions still unverified:
+
+## Changes
+- Files modified:
+- Specific changes:
+- Data/schema changes:
+- Dependencies added/removed:
+
+## Verification
+- Commands actually run:
+- Test cases executed:
+- Passed:
+- Failed:
+- Skipped/unavailable:
+- Build result:
+- Browser result:
+- Security emulator result:
+
+## Data safety
+- Production data touched? Must be NO unless explicitly approved.
+- Staging data touched:
+- Backup location/checksum:
+- Migration applied? If yes, owner approval reference and result:
+
+## Remaining issues
+- Outstanding bugs:
+- Risks:
+- Owner decisions required:
+
+## Rollback
+- Exact files/commit/checkpoint to revert:
+- Data rollback steps if applicable:
+
+Do not call a phase complete if any required acceptance test is skipped or failed. Mark PARTIAL and explain.
+
+---
+
+# 18. FINAL RELEASE ACCEPTANCE CRITERIA
+
+The project is not ready for production merely because it builds.
+
+It is ready for owner preview only when:
+
+- Source and all original question banks/assets are preserved.
+- Stable account identity is correct for Damini and Demo.
+- Admin roster shows correct real accounts exactly once.
+- No plaintext passwords are displayed or newly persisted.
+- Auth and Firestore rules pass the defined staging security tests.
+- Data synchronization has durable retry/idempotency and does not silently lose queued writes.
+- Account deactivation preserves progress/history.
+- Tier-I and Tier-II end-to-end exams pass.
+- Double submission cannot create duplicate attempt/XP.
+- Offline/resume/reconnect tests pass.
+- Admin question/test workflows pass.
+- Student dashboard/analytics agree with canonical data.
+- PWA updates do not unexpectedly interrupt an active exam.
+- GitHub Pages or preview base path works for all routes.
+- No private student reports or credentials are newly exposed through a public repository/build.
+- Browser QA is done on phone and desktop viewports.
+- A test report clearly states any remaining untested areas.
+- A separate staging URL is opened and verified.
+- Production remains untouched pending explicit owner approval.
+
+Production deployment requires a separate owner decision after testing the preview personally. Never publish automatically.
+
+---
+
+# 19. FIRST INSTRUCTION TO GOOGLE AI STUDIO
+
+Start now with **PHASE 0 and PHASE 1 only**.
+
+1. Read this entire master document.
+2. Read the entire existing project source tree.
+3. Re-verify the findings in this document against the actual current files.
+4. Protect the original source and create an isolated development copy.
+5. Do not connect to or write to production Firebase.
+6. Do not modify production Firestore rules or production data.
+7. Do not deploy.
+8. Do not run a destructive migration.
+9. Do not start implementing all repairs yet.
+10. Produce the architecture, dependency, data-flow, bug-register and baseline reports.
+11. Identify any discrepancy between this document and current source.
+12. End with a clear list of the exact files and commands needed for Phase 2.
+
+After Phase 1, stop and wait for the project owner to review the report and authorize the next phase.
+
+**Final instruction:** Preserve Path to CGL. Repair the existing system. Keep student identities and progress intact. Prefer correct, tested, reversible engineering over fast code generation. Never trade security or data integrity for a feature that merely appears to work.
