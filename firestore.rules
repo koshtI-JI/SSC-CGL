@@ -1,9 +1,0 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Full lockdown: all online reads and writes permanently disabled.
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}

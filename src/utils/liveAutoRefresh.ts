@@ -1,4 +1,7 @@
-import { shouldDeferSwUpdate, type SwUpdateGuardState } from './pwaUpdateGuard';
+export interface LiveRefreshGuardState {
+  activeExamOpen: boolean;
+  isDestActive: boolean;
+}
 
 export const LIVE_REFRESH_POLL_INTERVAL_MS = 10_000;
 export const LIVE_REFRESH_COOLDOWN_MS = 12_000;
@@ -12,7 +15,7 @@ export function parseBuildVersionPayload(raw: unknown): string | null {
 }
 
 export function shouldAutoReloadForVersion(
-  params: SwUpdateGuardState & {
+  params: LiveRefreshGuardState & {
     currentVersion: string;
     remoteVersion: string | null;
     lastReloadAtMs?: number | null;
@@ -25,12 +28,7 @@ export function shouldAutoReloadForVersion(
   if (!current || !remote || current === remote) {
     return false;
   }
-  if (
-    shouldDeferSwUpdate({
-      activeExamOpen: params.activeExamOpen,
-      isDestActive: params.isDestActive,
-    })
-  ) {
+  if (params.activeExamOpen || params.isDestActive) {
     return false;
   }
   const now = params.nowMs ?? Date.now();
