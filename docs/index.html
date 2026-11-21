@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Path to CGL — Coming Soon</title>
+    <meta name="description" content="Path to CGL is coming soon in new form and features." />
+    <meta property="og:title" content="Path to CGL — Coming Soon" />
+    <meta property="og:description" content="Path to CGL is coming soon in new form and features." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#1e3a8a" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        max-width: 100%;
+        overflow-x: clip;
+      }
+      body {
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1.5rem;
+        background:
+          radial-gradient(circle at 50% 40%, rgba(30, 58, 138, 0.065), transparent 60%),
+          #f4f6f8;
+        color: #0f172a;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+        text-align: center;
+        -webkit-font-smoothing: antialiased;
+      }
+      html.dark body {
+        background:
+          radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.11), transparent 58%),
+          #0b0f17;
+        color: #f1f5f9;
+      }
+      main {
+        max-width: 48rem;
+        width: 100%;
+      }
+      .bar {
+        width: 3.5rem;
+        height: 3px;
+        background: #1e3a8a;
+        margin: 0 auto 2rem;
+      }
+      html.dark .bar {
+        background: #3b82f6;
+      }
+      h1 {
+        font-size: clamp(2rem, 4.4vw, 3.65rem);
+        font-weight: 700;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+      .brand {
+        color: #1e3a8a;
+      }
+      html.dark .brand {
+        color: #60a5fa;
+      }
+      .rule {
+        width: 6rem;
+        height: 1px;
+        background: rgba(148, 163, 184, 0.55);
+        margin: 2rem auto 0;
+      }
+      html.dark .rule {
+        background: #1e293b;
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('getcgl_theme_v1') === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+
+        try {
+          var sw =
+            'serviceWorker' in navigator
+              ? navigator.serviceWorker
+                  .getRegistrations()
+                  .then(function (r) {
+                    if (!r || !r.length) return false;
+                    return Promise.all(
+                      r.map(function (x) {
+                        return x.unregister().catch(function () {
+                          return false;
+                        });
+                      })
+                    ).then(function () {
+                      return true;
+                    });
+                  })
+                  .catch(function () {
+                    return false;
+                  })
+              : Promise.resolve(false);
+
+          var c =
+            'caches' in window
+              ? caches
+                  .keys()
+                  .then(function (k) {
+                    if (!k || !k.length) return false;
+                    return Promise.all(
+                      k.map(function (x) {
+                        return caches.delete(x).catch(function () {
+                          return false;
+                        });
+                      })
+                    ).then(function () {
+                      return true;
+                    });
+                  })
+                  .catch(function () {
+                    return false;
+                  })
+              : Promise.resolve(false);
+
+          Promise.all([sw, c]).then(function (res) {
+            if ((res[0] || res[1]) && !sessionStorage.getItem('getcgl_sw_cleaned_v2')) {
+              sessionStorage.setItem('getcgl_sw_cleaned_v2', '1');
+              location.reload();
+            }
+          });
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <main aria-label="Coming soon announcement">
+      <div class="bar" aria-hidden="true"></div>
+      <h1><span class="brand">Path to CGL</span> is coming soon in new form and features</h1>
+      <div class="rule" aria-hidden="true"></div>
+    </main>
+  </body>
+</html>

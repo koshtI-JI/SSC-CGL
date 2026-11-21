@@ -2,6 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { CheckCircle2, X } from 'lucide-react';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { AuthGateway } from './components/AuthGateway';
+import { ComingSoonPage } from './components/ComingSoonPage';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
@@ -731,6 +732,30 @@ function AppWorkspace(props: {
     setStudentProfile,
   ]);
 
+  const canRenderAdminWorkspace = isOmRoute || (Boolean(adminPreviewStudent) && isDestRoute);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (!canRenderAdminWorkspace) {
+      document.title = 'Path to CGL — Coming Soon';
+      return;
+    }
+    const appTitle = platformConfig.appName.trim() || 'Path to CGL';
+    const cohortLabel = platformConfig.cohortName.trim() || 'Admin Control Center';
+    document.title = `${appTitle} — ${cohortLabel}`;
+  }, [canRenderAdminWorkspace, platformConfig.appName, platformConfig.cohortName]);
+
+  // Public site displays only the Coming Soon announcement immediately (no loading flash);
+  // hidden /#/om route preserves Admin Control Gateway & Control Center
+  if (!canRenderAdminWorkspace) {
+    return (
+      <>
+        <ComingSoonPage />
+        <PwaUpdateBanner activeExamOpen={false} isDestActive={false} />
+      </>
+    );
+  }
+
   if (phase === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f4f6f8] dark:bg-[#0b0f17] text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -834,19 +859,17 @@ function AppWorkspace(props: {
     </>
   );
 
-  const canRenderAdminWorkspace = isOmRoute || (Boolean(adminPreviewStudent) && isDestRoute);
-
-  // Hidden /om route strictly controls Admin UI; "/" NEVER displays Admin Login or Control Center
-  if (phase === 'signed_out' || (phase === 'admin_ready' && !canRenderAdminWorkspace)) {
+  // Hidden /om route strictly controls Admin UI
+  if (phase === 'signed_out') {
     return (
       <>
         <AuthGateway
-          routeMode={isOmRoute ? 'admin_om' : 'student'}
+          routeMode="admin_om"
           scoringConfig={scoringConfig}
           platformConfig={platformConfig}
           onStudentLogin={handleStudentLogin}
           onAdminLogin={handleAdminLogin}
-          onBackToStudentHome={isOmRoute ? () => navigateToRoute('/') : undefined}
+          onBackToStudentHome={() => navigateToRoute('/')}
         />
         {globalChrome}
       </>

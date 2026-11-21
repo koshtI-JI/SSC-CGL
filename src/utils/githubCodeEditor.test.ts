@@ -11,6 +11,7 @@ import {
   getMemoryGithubToken,
   isProtectedBranch,
   parseGithubRepoSlug,
+  publishComingSoonToGhPages,
   setMemoryGithubToken,
 } from './githubCodeEditor';
 
@@ -138,3 +139,52 @@ test('formatGithubApiError and computeLineDiffSummary produce accurate diagnosti
   assert.equal(diff.addedLines, 2);
   assert.equal(diff.removedLines, 1);
 });
+
+test('publishComingSoonToGhPages commits sw.js, index.html, and 404.html to gh-pages', async () => {
+  const putPaths: string[] = [];
+  const fakeFetch: typeof fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    const match = url.match(/\/contents\/([^?]+)/);
+    const filePath = match ? decodeURIComponent(match[1]) : 'unknown';
+    if (method === 'GET') {
+      return new Response(
+        JSON.stringify({
+          path: filePath,
+          sha: `sha_${filePath}`,
+          content: encodeUtf8ToBase64('old'),
+          size: 3,
+        }),
+        { status: 200 }
+      );
+    }
+    putPaths.push(filePath);
+    const parsed = JSON.parse(String(init?.body || '{}')) as { branch: string; content: string };
+    assert.equal(parsed.branch, 'gh-pages');
+    if (filePath === 'index.html' || filePath === '404.html') {
+      assert.match(
+        decodeBase64ToUtf8(parsed.content),
+        /Path to CGL.*is coming soon in new form and features/
+      );
+    }
+    return new Response(
+      JSON.stringify({
+        content: { path: filePath, sha: `new_${filePath}` },
+        commit: { sha: `commit_${filePath}` },
+      }),
+      { status: 200 }
+    );
+  }) as typeof fetch;
+
+  const results = await publishComingSoonToGhPages({
+    owner: 'koshtI-JI',
+    repo: 'SSC-CGL',
+    token: 'ghp_valid_123',
+    fetchFn: fakeFetch,
+  });
+
+  assert.deepEqual(putPaths, ['sw.js', 'index.html', '404.html']);
+  assert.equal(results.length, 3);
+  assert.equal(results[1].branch, 'gh-pages');
+});
+

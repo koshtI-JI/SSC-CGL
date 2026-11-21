@@ -1,22 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { RefreshCw, X } from 'lucide-react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import React, { useEffect, useRef } from 'react';
 import {
-  canShowSwUpdatePrompt,
-  shouldAutoApplySwUpdate,
-} from '../utils/pwaUpdateGuard';
+  LIVE_REFRESH_POLL_INTERVAL_MS,
+  parseBuildVersionPayload,
+  shouldAutoReloadForVersion,
+} from '../utils/liveAutoRefresh';
 
 interface PwaUpdateBannerProps {
   activeExamOpen: boolean;
   isDestActive: boolean;
 }
 
-const SW_LAST_RELOAD_KEY = 'getcgl_sw_last_reload_ms';
-const SW_UPDATE_POLL_INTERVAL_MS = 60_000;
+const LAST_RELOAD_KEY = 'getcgl_live_refresh_last_ms';
 
 function readLastReloadAtMs(): number | null {
   try {
-    const raw = sessionStorage.getItem(SW_LAST_RELOAD_KEY);
+    const raw = sessionStorage.getItem(LAST_RELOAD_KEY);
     if (!raw) return null;
     const parsed = Number(raw);
     return Number.isFinite(parsed) ? parsed : null;
@@ -27,9 +25,28 @@ function readLastReloadAtMs(): number | null {
 
 function recordLastReloadAtMs(nowMs: number): void {
   try {
-    sessionStorage.setItem(SW_LAST_RELOAD_KEY, String(nowMs));
+    sessionStorage.setItem(LAST_RELOAD_KEY, String(nowMs));
   } catch {
     // Ignore storage errors
+  }
+}
+
+async function clearStaleSwAndCaches(): Promise<void> {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => reg.unregister().catch(() => false)));
+    }
+  } catch {
+    // Ignore SW cleanup errors
+  }
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key).catch(() => false)));
+    }
+  } catch {
+    // Ignore cache cleanup errors
   }
 }
 
@@ -37,134 +54,87 @@ export const PwaUpdateBanner: React.FC<PwaUpdateBannerProps> = ({
   activeExamOpen,
   isDestActive,
 }) => {
-  const [dismissed, setDismissed] = useState(false);
-  const [autoUpdating, setAutoUpdating] = useState(false);
-  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
-  const autoAppliedRef = useRef(false);
+  const reloadingRef = useRef(false);
+  const examOpenRef = useRef(activeExamOpen);
+  const destActiveRef = useRef(isDestActive);
 
-  const {
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
-    onRegisteredSW(_swUrl, registration) {
-      if (!registration) return;
-      registrationRef.current = registration;
-      void registration.update().catch(() => {});
-    },
-  });
-
-  // Proactively check for fresh deployments on tab focus, visibility return, reconnect, and interval
   useEffect(() => {
-    const checkForUpdates = () => {
-      const reg = registrationRef.current;
-      if (!reg) return;
+    examOpenRef.current = activeExamOpen;
+    destActiveRef.current = isDestActive;
+  }, [activeExamOpen, isDestActive]);
+
+  useEffect(() => {
+    // Ensure any legacy PWA service worker or cached bundle is removed
+    void clearStaleSwAndCaches();
+
+    const currentVersion =
+      typeof __APP_BUILD_VERSION__ === 'string' ? __APP_BUILD_VERSION__ : '';
+    if (!currentVersion) return;
+
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+
+    let disposed = false;
+
+    const checkLiveVersion = async () => {
+      if (disposed || reloadingRef.current) return;
       if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
-      void reg.update().catch(() => {});
+
+      try {
+        const res = await fetch(`${normalizedBase}version.json?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        if (!res.ok) return;
+        const json: unknown = await res.json();
+        const remoteVersion = parseBuildVersionPayload(json);
+        const nowMs = Date.now();
+
+        if (
+          shouldAutoReloadForVersion({
+            currentVersion,
+            remoteVersion,
+            activeExamOpen: examOpenRef.current,
+            isDestActive: destActiveRef.current,
+            lastReloadAtMs: readLastReloadAtMs(),
+            nowMs,
+          })
+        ) {
+          reloadingRef.current = true;
+          recordLastReloadAtMs(nowMs);
+          await clearStaleSwAndCaches();
+          window.location.reload();
+        }
+      } catch {
+        // Ignore transient network failures while polling
+      }
     };
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkForUpdates();
+        void checkLiveVersion();
       }
     };
 
-    window.addEventListener('focus', checkForUpdates);
-    window.addEventListener('online', checkForUpdates);
+    const onFocusOrOnline = () => {
+      void checkLiveVersion();
+    };
+
+    window.addEventListener('focus', onFocusOrOnline);
+    window.addEventListener('online', onFocusOrOnline);
     document.addEventListener('visibilitychange', onVisibilityChange);
-    const intervalId = window.setInterval(checkForUpdates, SW_UPDATE_POLL_INTERVAL_MS);
+    const intervalId = window.setInterval(() => {
+      void checkLiveVersion();
+    }, LIVE_REFRESH_POLL_INTERVAL_MS);
 
     return () => {
-      window.removeEventListener('focus', checkForUpdates);
-      window.removeEventListener('online', checkForUpdates);
+      disposed = true;
+      window.removeEventListener('focus', onFocusOrOnline);
+      window.removeEventListener('online', onFocusOrOnline);
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.clearInterval(intervalId);
     };
   }, []);
 
-  // Automatically activate fresh deployments when idle (never during an active exam or DEST simulator)
-  useEffect(() => {
-    if (autoAppliedRef.current) return;
-    const nowMs = Date.now();
-    if (
-      !shouldAutoApplySwUpdate({
-        needRefresh,
-        activeExamOpen,
-        isDestActive,
-        lastReloadAtMs: readLastReloadAtMs(),
-        nowMs,
-      })
-    ) {
-      return;
-    }
-    autoAppliedRef.current = true;
-    setAutoUpdating(true);
-    recordLastReloadAtMs(nowMs);
-    const timer = window.setTimeout(() => {
-      void updateServiceWorker(true).catch(() => {
-        setAutoUpdating(false);
-        autoAppliedRef.current = false;
-      });
-    }, 600);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [needRefresh, activeExamOpen, isDestActive, updateServiceWorker]);
-
-  const visible = canShowSwUpdatePrompt({
-    needRefresh,
-    activeExamOpen,
-    isDestActive,
-    dismissed,
-  });
-
-  if (!visible) return null;
-
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[min(92vw,440px)] rounded-xl border border-blue-300 dark:border-blue-700 bg-white dark:bg-[#131924] px-4 py-3 text-xs text-slate-900 dark:text-slate-100 shadow-xl no-print"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="font-bold text-blue-800 dark:text-blue-300">
-            {autoUpdating ? 'Applying Latest Update...' : 'Update Ready for Path to CGL'}
-          </div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-300">
-            {autoUpdating
-              ? 'Loading your newest changes automatically.'
-              : 'Reload cleanly when ready — active exams are never interrupted.'}
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            disabled={autoUpdating}
-            onClick={() => {
-              recordLastReloadAtMs(Date.now());
-              void updateServiceWorker(true);
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60 cursor-pointer"
-          >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${autoUpdating ? 'animate-spin' : ''}`}
-              aria-hidden="true"
-            />
-            <span>{autoUpdating ? 'Updating...' : 'Reload'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setDismissed(true);
-              setNeedRefresh(false);
-            }}
-            aria-label="Dismiss update notification"
-            className="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 };

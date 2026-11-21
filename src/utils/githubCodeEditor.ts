@@ -333,3 +333,145 @@ export async function commitRepoFile(params: {
     branch: safeBranch,
   };
 }
+
+export function buildComingSoonGhPagesFiles(): Array<{ path: string; content: string }> {
+  const swJs = `// Self-destructing Service Worker: clears all offline caches and reloads open tabs.
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      try { await self.clients.claim(); } catch {}
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      } catch {}
+      try {
+        const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        await Promise.all(
+          list.map((c) => ('navigate' in c ? c.navigate(c.url).catch(() => null) : null))
+        );
+      } catch {}
+      try { await self.registration.unregister(); } catch {}
+    })()
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(fetch(event.request, { cache: 'no-store' }));
+});
+`;
+
+  const htmlPage = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Path to CGL — Coming Soon</title>
+    <meta name="description" content="Path to CGL is coming soon in new form and features." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1.5rem;
+        background: radial-gradient(circle at 50% 40%, rgba(30, 58, 138, 0.065), transparent 60%), #f4f6f8;
+        color: #0f172a;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+        text-align: center;
+      }
+      main { max-width: 48rem; }
+      .bar { width: 3.5rem; height: 3px; background: #1e3a8a; margin: 0 auto 2rem; }
+      h1 {
+        font-size: clamp(2rem, 4.4vw, 3.65rem);
+        font-weight: 700;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+      .brand { color: #1e3a8a; }
+      .rule { width: 6rem; height: 1px; background: rgba(148, 163, 184, 0.55); margin: 2rem auto 0; }
+    </style>
+    <script>
+      (function () {
+        try {
+          var sw = 'serviceWorker' in navigator
+            ? navigator.serviceWorker.getRegistrations().then(function (r) {
+                if (!r.length) return false;
+                return Promise.all(r.map(function (x) { return x.unregister().catch(function () {}); })).then(function () { return true; });
+              })
+            : Promise.resolve(false);
+          var c = 'caches' in window
+            ? caches.keys().then(function (k) {
+                if (!k.length) return false;
+                return Promise.all(k.map(function (x) { return caches.delete(x).catch(function () {}); })).then(function () { return true; });
+              })
+            : Promise.resolve(false);
+          Promise.all([sw, c]).then(function (res) {
+            if ((res[0] || res[1]) && !sessionStorage.getItem('getcgl_sw_cleaned_v2')) {
+              sessionStorage.setItem('getcgl_sw_cleaned_v2', '1');
+              location.reload();
+            }
+          });
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <main>
+      <div class="bar"></div>
+      <h1><span class="brand">Path to CGL</span> is coming soon in new form and features</h1>
+      <div class="rule"></div>
+    </main>
+  </body>
+</html>
+`;
+
+  return [
+    { path: 'sw.js', content: swJs },
+    { path: 'index.html', content: htmlPage },
+    { path: '404.html', content: htmlPage },
+  ];
+}
+
+export async function publishComingSoonToGhPages(params: {
+  owner: string;
+  repo: string;
+  token: string;
+  branch?: string;
+  fetchFn?: typeof fetch;
+}): Promise<GithubCommitResult[]> {
+  const target: GithubRepoTarget = {
+    owner: params.owner,
+    repo: params.repo,
+    branch: params.branch?.trim() || 'gh-pages',
+  };
+  const files = buildComingSoonGhPagesFiles();
+  const results: GithubCommitResult[] = [];
+  for (const file of files) {
+    const res = await commitRepoFile({
+      target,
+      filePath: file.path,
+      content: file.content,
+      commitMessage: `chore(pages): publish Coming Soon & clear cache (${file.path})`,
+      token: params.token,
+      fetchFn: params.fetchFn,
+    });
+    results.push(res);
+  }
+  return results;
+}
+

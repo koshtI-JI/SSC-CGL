@@ -27,6 +27,7 @@ import {
   isProtectedBranch,
   listRepoTree,
   parseGithubRepoSlug,
+  publishComingSoonToGhPages,
   setMemoryGithubToken,
   type GithubTreeItem,
 } from '../utils/githubCodeEditor';
@@ -54,6 +55,7 @@ export const LiveCodeEditorPanel: React.FC<LiveCodeEditorPanelProps> = ({ onNoti
   const [loadingFile, setLoadingFile] = useState(false);
   const [commitMessage, setCommitMessage] = useState('');
   const [committing, setCommitting] = useState(false);
+  const [publishingPages, setPublishingPages] = useState(false);
   const [editorView, setEditorView] = useState<'edit' | 'preview'>('edit');
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
@@ -168,6 +170,31 @@ export const LiveCodeEditorPanel: React.FC<LiveCodeEditorPanelProps> = ({ onNoti
     }
   };
 
+  const handlePublishComingSoonToGhPages = async () => {
+    setPublishingPages(true);
+    setFeedback(null);
+    try {
+      const { owner, repo } = parseGithubRepoSlug(repoSlug);
+      const results = await publishComingSoonToGhPages({
+        owner,
+        repo,
+        token,
+        branch: 'gh-pages',
+      });
+      report(
+        'ok',
+        `Published ${results.map((r) => r.path).join(', ')} to ${owner}/${repo}@gh-pages. Live GitHub Pages updates in 1–2 minutes.`
+      );
+    } catch (err) {
+      report(
+        'err',
+        err instanceof Error ? err.message : 'Unable to publish Coming Soon page to gh-pages.'
+      );
+    } finally {
+      setPublishingPages(false);
+    }
+  };
+
   const previewLines = useMemo(() => editorContent.split('\n').slice(0, 500), [editorContent]);
 
   return (
@@ -277,6 +304,27 @@ export const LiveCodeEditorPanel: React.FC<LiveCodeEditorPanelProps> = ({ onNoti
             </button>
           </div>
         </div>
+      </div>
+
+      {/* 1-Click GitHub Pages Coming Soon Deploy */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/25 px-4 py-3">
+        <div className="text-xs text-slate-700 dark:text-slate-200">
+          <strong className="font-semibold text-slate-900 dark:text-white">
+            One-Click GitHub Pages Coming Soon Publish:
+          </strong>{' '}
+          Pushes the clean Coming Soon <code className="font-mono">index.html</code>,{' '}
+          <code className="font-mono">404.html</code>, and cache-clearing{' '}
+          <code className="font-mono">sw.js</code> directly to <code className="font-mono">gh-pages</code>.
+        </div>
+        <button
+          type="button"
+          disabled={publishingPages || !token.trim()}
+          onClick={() => void handlePublishComingSoonToGhPages()}
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#1e3a8a] hover:bg-blue-800 px-3.5 py-2 text-xs font-semibold text-white disabled:opacity-50 whitespace-nowrap cursor-pointer shrink-0"
+        >
+          <Save className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>{publishingPages ? 'Publishing to gh-pages...' : 'Publish Coming Soon to gh-pages'}</span>
+        </button>
       </div>
 
       {isMainBlocked && (

@@ -16,7 +16,7 @@
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/data/sscStarterBank.test.ts src/lib/aiClient.test.ts src/utils/adminCommandCenter.test.ts src/utils/appRoutes.test.ts src/utils/bulkParser.test.ts src/utils/cloudFirstSync.test.ts src/utils/destSimulator.test.ts src/utils/dreamPostCatalog.test.ts src/utils/examEngine.test.ts src/utils/examTimer.test.ts src/utils/firestoreQuota.test.ts src/utils/githubCodeEditor.test.ts src/utils/indexedDbStore.test.ts src/utils/localFallbackStore.test.ts src/utils/pdfIngestor.test.ts src/utils/pdfQuestionExtractor.test.ts src/utils/platformConfig.test.ts src/utils/pwaUpdateGuard.test.ts src/utils/revisionHistory.test.ts src/utils/sessionAndOverrides.test.ts src/utils/staticGkBank.test.ts src/utils/studentAnalyticsEngine.test.ts src/utils/studyCoach.test.ts src/utils/syllabusCatalog.test.ts src/utils/tier1Engine.test.ts src/utils/tier2Engine.test.ts"
+    "test": "tsx --test src/utils/*.test.ts src/data/*.test.ts src/lib/*.test.ts"
   },
   "dependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",

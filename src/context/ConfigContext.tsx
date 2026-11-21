@@ -45,13 +45,6 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const appTitle = platformConfig.appName.trim() || DEFAULT_PLATFORM_CONFIG.appName;
-    const cohortLabel = platformConfig.cohortName.trim() || DEFAULT_PLATFORM_CONFIG.cohortName;
-    document.title = `${appTitle} — ${cohortLabel}`;
-  }, [platformConfig.appName, platformConfig.cohortName]);
-
   const updateScoringConfig = useCallback(async (next: ScoringConfig) => {
     await saveScoringConfig(next);
   }, []);
