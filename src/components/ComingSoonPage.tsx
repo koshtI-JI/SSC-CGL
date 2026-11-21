@@ -34,7 +34,7 @@ export const ComingSoonPage: React.FC = () => {
         {/* Top Luminous Horizon Accent */}
         <div
           aria-hidden="true"
-          className="launch-line-expand relative mb-10 h-px w-48 sm:w-64 overflow-hidden bg-gradient-to-r from-transparent via-blue-400/65 to-transparent"
+          className="launch-line-expand relative mb-8 h-px w-48 sm:w-64 overflow-hidden bg-gradient-to-r from-transparent via-blue-400/65 to-transparent"
         >
           <span className="launch-beam-glide absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white to-transparent" />
         </div>

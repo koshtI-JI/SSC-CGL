@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <defs>
+    <linearGradient id="tileBg" x1="12" y1="8" x2="108" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#172554" />
+      <stop offset="52%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#070b14" />
+    </linearGradient>
+    <linearGradient id="rimStroke" x1="10" y1="10" x2="110" y2="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.85" />
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.65" />
+    </linearGradient>
+    <linearGradient id="pathGrad" x1="30" y1="90" x2="90" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="55%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+    <linearGradient id="apexGold" x1="76" y1="22" x2="94" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#tileBg)" stroke="url(#rimStroke)" stroke-width="2.5" />
+  <path d="M26 86 C40 72, 52 54, 82 34" stroke="#38bdf8" stroke-opacity="0.22" stroke-width="10" stroke-linecap="round" />
+  <path
+    d="M28 84 L50 62 L62 72 L86 36"
+    stroke="url(#pathGrad)"
+    stroke-width="7.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M68 35 H87 V54"
+    stroke="url(#pathGrad)"
+    stroke-width="7.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M87 21 L90.2 27.8 L97 31 L90.2 34.2 L87 41 L83.8 34.2 L77 31 L83.8 27.8 Z"
+    fill="url(#apexGold)"
+  />
+</svg>

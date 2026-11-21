@@ -262,7 +262,37 @@
   animation: launch-mote-float 11s ease-in-out -6s infinite;
 }
 
+@keyframes launch-icon-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.86);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes launch-icon-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.launch-icon-enter {
+  animation:
+    launch-icon-enter 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both,
+    launch-icon-float 6s ease-in-out 1.1s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .launch-icon-enter,
   .launch-mask-rise-1,
   .launch-mask-rise-2,
   .launch-fade-up-1,
