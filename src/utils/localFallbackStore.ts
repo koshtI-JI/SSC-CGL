@@ -214,6 +214,17 @@ function sanitizeDbShape(raw: unknown): LocalFallbackDatabase {
 
 let cachedDb: LocalFallbackDatabase | null = null;
 const subscribers = new Set<() => void>();
+let crossTabListenerAttached = false;
+
+function ensureCrossTabStorageListener(): void {
+  if (crossTabListenerAttached || typeof window === 'undefined') return;
+  crossTabListenerAttached = true;
+  window.addEventListener('storage', (ev: StorageEvent) => {
+    if (ev.key && ev.key !== LOCAL_DB_STORAGE_KEY) return;
+    cachedDb = null;
+    notifyLocalDbListeners();
+  });
+}
 
 export function notifyLocalDbListeners(): void {
   for (const listener of subscribers) {
@@ -226,6 +237,7 @@ export function notifyLocalDbListeners(): void {
 }
 
 export function subscribeLocalDb(listener: () => void): () => void {
+  ensureCrossTabStorageListener();
   subscribers.add(listener);
   return () => {
     subscribers.delete(listener);

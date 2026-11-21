@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
-  const base = process.env.BASE_PATH || '/SSC-CGL/';
+  const base = process.env.BASE_PATH || '/';
 
   return {
     base,
@@ -63,6 +63,7 @@ export default defineConfig(() => {
         },
 
         workbox: {
+          cleanupOutdatedCaches: true,
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
 
           globPatterns: [

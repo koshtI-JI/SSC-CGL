@@ -38,6 +38,30 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    function isValidPlatformConfig(data) {
+      return data.keys().hasAll([
+          'appName', 'cohortName', 'defaultLanguage', 'strictCameraDefault',
+          'offlineAutoLogoutSec', 'dailyAutoMockEnabled', 'githubReportsEnabled',
+          'aiTutorEnabled', 'maintenanceBanner', 'updatedAtMs', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'appName', 'cohortName', 'defaultLanguage', 'strictCameraDefault',
+          'offlineAutoLogoutSec', 'dailyAutoMockEnabled', 'githubReportsEnabled',
+          'aiTutorEnabled', 'maintenanceBanner', 'updatedAtMs', 'updatedAt'
+        ])
+        && data.appName is string && data.appName.size() >= 1 && data.appName.size() <= 80
+        && data.cohortName is string && data.cohortName.size() >= 1 && data.cohortName.size() <= 80
+        && data.defaultLanguage in ['en', 'hi']
+        && data.strictCameraDefault is bool
+        && data.offlineAutoLogoutSec is int && data.offlineAutoLogoutSec >= 30 && data.offlineAutoLogoutSec <= 600
+        && data.dailyAutoMockEnabled is bool
+        && data.githubReportsEnabled is bool
+        && data.aiTutorEnabled is bool
+        && data.maintenanceBanner is string && data.maintenanceBanner.size() <= 240
+        && data.updatedAtMs is number && data.updatedAtMs >= 0
+        && data.updatedAt is timestamp;
+    }
+
     function isValidAdminCredentials(data) {
       return data.keys().hasAll(['adminId', 'passwordHash', 'updatedAt'])
         && data.keys().hasOnly(['adminId', 'passwordHash', 'updatedAt'])
@@ -525,11 +549,12 @@ service cloud.firestore {
     // --- Collection Rules (Schema-Validated for Direct ID+Password Flow) ---
 
     match /settings/{settingId} {
-      allow get: if isValidId(settingId) && settingId in ['scoring', 'adminCredentials'];
+      allow get: if isValidId(settingId) && settingId in ['scoring', 'adminCredentials', 'platformConfig'];
       allow list: if existing().updatedAt is timestamp;
       allow create, update: if isValidId(settingId) && (
         (settingId == 'scoring' && isValidScoringConfig(incoming()) && incoming().updatedAt == request.time)
         || (settingId == 'adminCredentials' && isValidAdminCredentials(incoming()) && incoming().updatedAt == request.time)
+        || (settingId == 'platformConfig' && isValidPlatformConfig(incoming()) && incoming().updatedAt == request.time)
       );
       allow delete: if false;
     }

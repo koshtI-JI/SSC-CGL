@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AlertCircle, Camera, ShieldCheck, X } from 'lucide-react';
 import type { MockTestDoc } from '../types/exam';
 
@@ -6,6 +6,7 @@ interface CameraRulesModalProps {
   test: MockTestDoc;
   busy: boolean;
   errorMsg: string | null;
+  defaultStrictCamera?: boolean;
   onGrantAndStart: (strictCameraRequired: boolean) => Promise<void>;
   onContinueWithoutCamera: () => void;
   onCancel: () => void;
@@ -15,12 +16,17 @@ export const CameraRulesModal: React.FC<CameraRulesModalProps> = ({
   test,
   busy,
   errorMsg,
+  defaultStrictCamera = false,
   onGrantAndStart,
   onContinueWithoutCamera,
   onCancel,
 }) => {
   const [checked, setChecked] = useState(false);
-  const [strictCameraRequired, setStrictCameraRequired] = useState(false);
+  const [strictCameraRequired, setStrictCameraRequired] = useState(defaultStrictCamera);
+
+  useEffect(() => {
+    setStrictCameraRequired(defaultStrictCamera);
+  }, [defaultStrictCamera]);
 
   return (
     <div

@@ -6,6 +6,7 @@ import {
   EyeOff,
   KeyRound,
   Lock,
+  Megaphone,
   ShieldCheck,
 } from 'lucide-react';
 import heroArenaImg from '../assets/images/hero_cgl_arena_1794665281724.jpg';
@@ -16,6 +17,7 @@ import {
   verifyStudentLogin,
 } from '../lib/firestoreService';
 import type { ScoringConfig, StudentProfile } from '../types/exam';
+import { DEFAULT_PLATFORM_CONFIG, type PlatformConfig } from '../utils/platformConfig';
 import { PWAInstallButton } from './PWAInstallButton';
 import { ThemeToggleButton } from './ThemeToggleButton';
 
@@ -26,6 +28,7 @@ const RulesGuideModal = lazy(() =>
 interface AuthGatewayProps {
   routeMode?: 'student' | 'admin_om';
   scoringConfig?: ScoringConfig;
+  platformConfig?: PlatformConfig;
   onStudentLogin: (student: StudentProfile) => void;
   onAdminLogin: (adminId: string) => void;
   onBackToStudentHome?: () => void;
@@ -34,11 +37,16 @@ interface AuthGatewayProps {
 export const AuthGateway: React.FC<AuthGatewayProps> = ({
   routeMode = 'student',
   scoringConfig,
+  platformConfig = DEFAULT_PLATFORM_CONFIG,
   onStudentLogin,
   onAdminLogin,
   onBackToStudentHome,
 }) => {
   const isAdminRoute = routeMode === 'admin_om';
+  const liveAppName = platformConfig.appName.trim() || DEFAULT_PLATFORM_CONFIG.appName;
+  const liveCohortName = platformConfig.cohortName.trim() || DEFAULT_PLATFORM_CONFIG.cohortName;
+  const liveBanner = platformConfig.maintenanceBanner.trim();
+  const liveOfflineSec = platformConfig.offlineAutoLogoutSec || 60;
 
   const [studentIdInput, setStudentIdInput] = useState('');
   const [studentPasswordInput, setStudentPasswordInput] = useState('');
@@ -147,7 +155,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
             onClick={(e) => e.preventDefault()}
             className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0"
           >
-            Path to CGL
+            {liveAppName}
           </a>
 
           {!isAdminRoute ? (
@@ -324,6 +332,15 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
           </div>
         ) : (
           <div className="space-y-8">
+            {liveBanner.length > 0 && (
+              <div
+                role="status"
+                className="flex items-start gap-3 rounded-xl border border-amber-300 dark:border-amber-800/70 bg-amber-50 dark:bg-amber-950/35 px-4 py-3 text-xs text-amber-950 dark:text-amber-100"
+              >
+                <Megaphone className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400" aria-hidden="true" />
+                <p className="font-medium leading-relaxed">{liveBanner}</p>
+              </div>
+            )}
             <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-12 lg:items-stretch">
               {/* Left Visual & Editorial Showcase */}
               <section className="order-2 lg:order-1 lg:col-span-7 flex flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-[#faf9f6] dark:bg-[#131924]">
@@ -339,14 +356,14 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-8 text-center">
                       <span className="font-display text-lg font-semibold text-slate-200">
-                        Path to CGL Assessment Arena
+                        {liveAppName} Assessment Arena
                       </span>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f17]/95 via-[#0b0f17]/70 to-[#0b0f17]/20" />
                   <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 text-white">
                     <p className="text-xs font-medium text-blue-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]">
-                      Private SSC CGL Cohort · Tier I &amp; Tier II · Bilingual EN / HI
+                      {liveCohortName} · Tier I &amp; Tier II · Bilingual EN / HI
                     </p>
                     <h1 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl [text-wrap:balance] drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
                       Precision TCS iON Mock Arena for Serious Aspirants
@@ -483,7 +500,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({
                   </form>
 
                   <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2 text-xs text-slate-500 dark:text-slate-400">
-                    <p>Invite-only access · Tab switching stays signed in; auto-logout triggers if offline continuously for 60 seconds.</p>
+                    <p>Invite-only access · Tab switching stays signed in; auto-logout triggers if offline continuously for {liveOfflineSec} seconds.</p>
                     <button
                       type="button"
                       onClick={() => setShowRulesModal(true)}

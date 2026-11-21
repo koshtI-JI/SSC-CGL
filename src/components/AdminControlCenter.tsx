@@ -113,6 +113,7 @@ interface AdminControlCenterProps {
   tasks: CohortTaskDoc[];
   xpLedger: XpLedgerEntryDoc[];
   scoringConfig: ScoringConfig;
+  brandName?: string;
   githubReportsEnabled?: boolean;
   supportTickets?: SupportTicketDoc[];
   reportedQueries?: ReportedQueryDoc[];
@@ -176,6 +177,7 @@ export const AdminControlCenter: React.FC<AdminControlCenterProps> = ({
   tasks,
   xpLedger,
   scoringConfig,
+  brandName = 'Path to CGL',
   githubReportsEnabled = true,
   supportTickets = [],
   reportedQueries = [],
@@ -831,6 +833,7 @@ export const AdminControlCenter: React.FC<AdminControlCenterProps> = ({
   return (
     <div className="min-h-screen bg-[#f4f6f8] dark:bg-[#11151d] text-slate-900 dark:text-slate-100">
       <TopNav
+        brandName={brandName}
         tabs={[
           { id: 'analytics', label: 'Analytics' },
           {

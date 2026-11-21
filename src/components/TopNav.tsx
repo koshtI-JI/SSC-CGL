@@ -9,6 +9,7 @@ export interface NavTabItem {
 }
 
 interface TopNavProps {
+  brandName?: string;
   tabs: NavTabItem[];
   activeTab: string;
   onSelectTab: (id: string) => void;
@@ -21,6 +22,7 @@ interface TopNavProps {
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
+  brandName = 'Path to CGL',
   tabs,
   activeTab,
   onSelectTab,
@@ -54,7 +56,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             }}
             className="font-display text-[15px] sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0"
           >
-            Path to CGL
+            {brandName || 'Path to CGL'}
           </a>
         </div>
 

@@ -23,6 +23,37 @@
         "updatedAt"
       ]
     },
+    "PlatformConfig": {
+      "title": "PlatformConfig",
+      "description": "Live website branding, feature flags, exam defaults, and announcement banner managed by Super Admin.",
+      "type": "object",
+      "properties": {
+        "appName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "cohortName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "defaultLanguage": { "type": "string", "enum": ["en", "hi"] },
+        "strictCameraDefault": { "type": "boolean" },
+        "offlineAutoLogoutSec": { "type": "integer" },
+        "dailyAutoMockEnabled": { "type": "boolean" },
+        "githubReportsEnabled": { "type": "boolean" },
+        "aiTutorEnabled": { "type": "boolean" },
+        "maintenanceBanner": { "type": "string", "maxLength": 240 },
+        "updatedAtMs": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "appName",
+        "cohortName",
+        "defaultLanguage",
+        "strictCameraDefault",
+        "offlineAutoLogoutSec",
+        "dailyAutoMockEnabled",
+        "githubReportsEnabled",
+        "aiTutorEnabled",
+        "maintenanceBanner",
+        "updatedAtMs",
+        "updatedAt"
+      ]
+    },
     "AdminGateConfig": {
       "title": "AdminGateConfig",
       "description": "Super Admin ID and salted SHA-256 password hash.",
@@ -589,7 +620,7 @@
   "firestore": {
     "/settings/{settingId}": {
       "schema": { "$ref": "#/entities/ScoringConfig" },
-      "description": "Platform configuration documents (scoring formula and adminCredentials)."
+      "description": "Platform configuration documents (scoring formula, platformConfig runtime settings, and adminCredentials)."
     },
     "/vipInvites/{inviteKey}": {
       "schema": { "$ref": "#/entities/VipInvite" },

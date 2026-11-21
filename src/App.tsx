@@ -843,6 +843,7 @@ function AppWorkspace(props: {
         <AuthGateway
           routeMode={isOmRoute ? 'admin_om' : 'student'}
           scoringConfig={scoringConfig}
+          platformConfig={platformConfig}
           onStudentLogin={handleStudentLogin}
           onAdminLogin={handleAdminLogin}
           onBackToStudentHome={isOmRoute ? () => navigateToRoute('/') : undefined}
@@ -1027,6 +1028,7 @@ function AppWorkspace(props: {
                 test={pendingCameraGate.test}
                 busy={cameraGateBusy}
                 errorMsg={cameraGateError}
+                defaultStrictCamera={platformConfig.strictCameraDefault}
                 onGrantAndStart={handleGrantCameraAndStart}
                 onContinueWithoutCamera={handleContinueWithoutCamera}
                 onCancel={() => {
@@ -1068,6 +1070,7 @@ function AppWorkspace(props: {
               tasks={tasks}
               xpLedger={xpLedger}
               scoringConfig={scoringConfig}
+              brandName={platformConfig.appName}
               githubReportsEnabled={platformConfig.githubReportsEnabled}
               supportTickets={supportTickets}
               reportedQueries={reportedQueries}
@@ -1263,6 +1266,7 @@ function AppWorkspace(props: {
               test={pendingCameraGate.test}
               busy={cameraGateBusy}
               errorMsg={cameraGateError}
+              defaultStrictCamera={platformConfig.strictCameraDefault}
               onGrantAndStart={handleGrantCameraAndStart}
               onContinueWithoutCamera={handleContinueWithoutCamera}
               onCancel={() => {

@@ -11,7 +11,7 @@
     "dev": "vite --host 0.0.0.0 --port 3000",
     "start": "vite preview --host 0.0.0.0 --port 3000",
     "build": "vite build",
-    "predeploy": "npm run build",
+    "predeploy": "BASE_PATH=/SSC-CGL/ npm run build",
     "deploy": "gh-pages -d dist",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "clean": "rm -rf dist",

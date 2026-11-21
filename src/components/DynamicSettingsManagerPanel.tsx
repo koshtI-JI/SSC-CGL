@@ -59,8 +59,8 @@ export const DynamicSettingsManagerPanel: React.FC<DynamicSettingsManagerPanelPr
       report(
         'ok',
         res.remoteSynced
-          ? 'Platform feature flags & runtime settings saved and synced to Firestore.'
-          : 'Platform settings saved locally (remote Firestore settings/platform rule requires DRAFT_firestore.rules deployment).'
+          ? 'Platform branding, feature flags & runtime settings saved and synced live to Firestore.'
+          : 'Platform settings saved locally and queued — will auto-sync to Firestore once cloud connection/quota is available.'
       );
     } catch (err) {
       report('err', err instanceof Error ? err.message : 'Failed to save platform settings.');
@@ -164,6 +164,54 @@ export const DynamicSettingsManagerPanel: React.FC<DynamicSettingsManagerPanelPr
               <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Reset Defaults</span>
             </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="plat-app-name"
+                className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                Website / Portal Name
+              </label>
+              <input
+                id="plat-app-name"
+                type="text"
+                maxLength={80}
+                value={draftPlatform.appName}
+                onChange={(e) =>
+                  setDraftPlatform((prev) => ({
+                    ...prev,
+                    appName: e.target.value,
+                  }))
+                }
+                placeholder="Path to CGL"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#11151d] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="plat-cohort-name"
+                className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                Cohort Subtitle / Header Tag
+              </label>
+              <input
+                id="plat-cohort-name"
+                type="text"
+                maxLength={80}
+                value={draftPlatform.cohortName}
+                onChange={(e) =>
+                  setDraftPlatform((prev) => ({
+                    ...prev,
+                    cohortName: e.target.value,
+                  }))
+                }
+                placeholder="SSC CGL VIP Cohort"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#11151d] px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

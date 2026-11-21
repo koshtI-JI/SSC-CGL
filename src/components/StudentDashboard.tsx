@@ -848,6 +848,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   return (
     <div className="min-h-screen bg-[#f4f6f8] dark:bg-[#0b0f17] text-slate-900 dark:text-slate-100 transition-colors">
       <TopNav
+        brandName={platformConfig.appName}
         tabs={[
           { id: 'overview', label: 'Mocks & Tasks' },
           { id: 'pending', label: `Pending (${pendingTestsCount})` },
